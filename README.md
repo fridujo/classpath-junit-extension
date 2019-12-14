@@ -23,6 +23,9 @@ void junit_extension_cannot_be_loaded() {
 }
 ```
 
+# Alternatives
+Use the `maven-invoker-plugin` with **pom.xml** template (see an example [here](https://github.com/fridujo/rabbitmq-mock/blob/78cd20380ea46089193dfbf5e29efd55798343ee/pom.xml#L163)).
+
 # Roadmap
 Currently this extension uses a _workaround_ to get things done, but it is waiting for [JUnit5 #201](https://github.com/junit-team/junit5/issues/201) to get a cleaner approach at this.
 

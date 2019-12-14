@@ -8,14 +8,43 @@ import org.junit.jupiter.api.Test;
 class ClasspathExclusionTests {
 
     @Test
-    void junit_extension_can_be_loaded() throws ClassNotFoundException {
+    void no_exclusion() throws ClassNotFoundException {
         assertThat(Class.forName("org.junit.jupiter.api.extension.Extension")).isExactlyInstanceOf(Class.class);
     }
 
     @Test
-    @ModifiedClasspath(excludeJars = "junit-jupiter-api")
-    void junit_extension_cannot_be_loaded() {
+    @ModifiedClasspath(excludeGavs = "junit-jupiter")
+    void exclusion_of_multiple_gavs_and_their_dependencies() {
         assertThatExceptionOfType(ClassNotFoundException.class)
             .isThrownBy(() -> Class.forName("org.junit.jupiter.api.extension.Extension"));
+
+        assertThatExceptionOfType(ClassNotFoundException.class)
+            .isThrownBy(() -> Class.forName("org.junit.jupiter.engine.JupiterTestEngine"));
+    }
+
+    @Test
+    @ModifiedClasspath(excludeGavs = "guava:guava")
+    void exclusion_of_one_gav_and_its_dependencies() {
+        assertThatExceptionOfType(ClassNotFoundException.class)
+            .isThrownBy(() -> Class.forName("com.google.common.collect.Maps"));
+        // Transitive dependency is removed
+        assertThatExceptionOfType(ClassNotFoundException.class)
+            .isThrownBy(() -> Class.forName("com.google.errorprone.annotations.DoNotMock"));
+    }
+
+    @Test
+    @ModifiedClasspath(excludeJars = "guava:guava")
+    void exclusion_of_one_jar() throws ClassNotFoundException {
+        assertThatExceptionOfType(ClassNotFoundException.class)
+            .isThrownBy(() -> Class.forName("com.google.common.collect.Maps"));
+        // Transitive dependency is kept
+        assertThat(Class.forName("com.google.errorprone.annotations.DoNotMock")).isExactlyInstanceOf(Class.class);
+    }
+
+    @Test
+    void excluding_non_matching_gav_throws() {
+        assertThatExceptionOfType(NoMatchingClasspathElementFoundException.class)
+            .isThrownBy(() -> Classpath.current().removeGav("grId:not_existing:1.2-RC3"))
+            .withMessage("grId:not_existing:1.2-RC3 found no match in classpath");
     }
 }

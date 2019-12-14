@@ -10,12 +10,22 @@ import org.junit.platform.commons.util.ReflectionUtils;
 
 public class ModifiedClasspathExtension implements InvocationInterceptor {
 
+    private final ExtensionContext.Namespace namespace = ExtensionContext.Namespace.create(ModifiedClasspathExtension.class);
+
     public void interceptTestMethod(Invocation<Void> invocation,
                                     ReflectiveInvocationContext<Method> invocationContext,
-                                    ExtensionContext extensionContext) throws Throwable {
+                                    ExtensionContext extensionContext) {
         silentlyInvokeOriginalMethod(invocation);
-        final ModifiedClasspath annotation = invocationContext.getExecutable().getAnnotation(ModifiedClasspath.class);
-        ClassLoader modifiedClassLoader = Classpath.current().removeJars(annotation.excludeJars()).newClassLoader();
+
+        ExtensionContext.Store store = extensionContext.getStore(namespace);
+        ClasspathContext context = store.getOrComputeIfAbsent(ClasspathContext.class);
+
+        ModifiedClasspath annotation = invocationContext.getExecutable().getAnnotation(ModifiedClasspath.class);
+        ClassLoader modifiedClassLoader = Classpath.current(context)
+            .removeJars(annotation.excludeJars())
+            .removeGavs(annotation.excludeGavs())
+            .newClassLoader();
+
         invokeMethodWithModifiedClasspath(
             invocationContext.getExecutable().getDeclaringClass().getName(),
             invocationContext.getExecutable().getName(),
@@ -27,7 +37,7 @@ public class ModifiedClasspathExtension implements InvocationInterceptor {
         try {
             testClass = classLoader.loadClass(className);
         } catch (ClassNotFoundException e) {
-            throw new IllegalStateException("Cannot load test class [" + className + "] from modified classloader", e);
+            throw new IllegalStateException("Cannot load test class [" + className + "] from modified classloader, verify that you did not exclude a path containing the test", e);
         }
 
         Object testInstance = ReflectionUtils.newInstance(testClass);

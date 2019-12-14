@@ -1,6 +1,7 @@
 package com.github.fridujo.junit.extension.classpath;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.io.File;
 
@@ -23,6 +24,7 @@ class GavTest {
         softly.assertThat(gav.artifactId).isEqualTo(artifactId);
         softly.assertThat(gav.groupId).isEqualTo(groupId);
         softly.assertThat(gav.version).isEqualTo(version);
+        softly.assertThat(gav).hasToString(gavExpression);
         softly.assertAll();
     }
 
@@ -48,6 +50,17 @@ class GavTest {
     void gav_matches_against_raw_path(String gavExpression, String path, boolean expectedMatch) {
         final Gav gav = Gav.parse(gavExpression);
 
-        assertThat(gav.matchesPath(path.replace('/', File.separatorChar))).isEqualTo(expectedMatch);
+        assertThat(gav.matchesJar(path.replace('/', File.separatorChar))).isEqualTo(expectedMatch);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "''",
+        "'  '"
+    })
+    void gav_cannot_be_blank(String gavExpression) {
+        assertThatExceptionOfType(IllegalArgumentException.class)
+            .isThrownBy(() -> Gav.parse(gavExpression))
+            .withMessage("Not a GAV expression");
     }
 }

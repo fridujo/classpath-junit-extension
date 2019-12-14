@@ -10,16 +10,16 @@ public class Gav {
     public final String artifactId;
     public final String groupId;
     public final String version;
-    private final Pattern pathPattern;
+    private final Pattern jarPattern;
 
-    private Gav(String artifactId, String groupId, String version) {
+    public Gav(String artifactId, String groupId, String version) {
         this.artifactId = artifactId;
         this.groupId = groupId;
         this.version = version;
-        this.pathPattern = buildPathPattern(artifactId, groupId, version);
+        this.jarPattern = buildJarPattern(artifactId, groupId, version);
     }
 
-    private static Pattern buildPathPattern(String artifactId, String groupId, String version) {
+    private static Pattern buildJarPattern(String artifactId, String groupId, String version) {
         if (groupId == null) {
             return Pattern.compile("(.*)" + Pattern.quote(artifactId) + "([^\\" + File.separatorChar + "]*)" + Pattern.quote(".jar"));
         }
@@ -35,15 +35,28 @@ public class Gav {
     }
 
     public static Gav parse(String gav) {
-        final Matcher matcher = GAV_PATTERN.matcher(gav);
+        final Matcher matcher = GAV_PATTERN.matcher(gav.trim());
         if (!matcher.matches()) {
             throw new IllegalArgumentException("Not a GAV expression");
         }
         return new Gav(matcher.group("artifactId"), matcher.group("groupId"), matcher.group("version"));
     }
 
-    public boolean matchesPath(String rawPath) {
-        return pathPattern.matcher(rawPath).matches();
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        if (groupId != null) {
+            sb.append(groupId).append(':');
+        }
+        sb.append(artifactId);
+        if (version != null) {
+            sb.append(':').append(version);
+        }
+        return sb.toString();
+    }
+
+    public boolean matchesJar(String rawJarPath) {
+        return jarPattern.matcher(rawJarPath).matches();
     }
 
     @Override

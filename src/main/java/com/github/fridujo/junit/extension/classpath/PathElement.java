@@ -4,10 +4,12 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.Objects;
 
-public class PathElement {
+public class PathElement implements Comparable<PathElement> {
     private final String rawPath;
 
     private PathElement(String rawPath) {
@@ -22,15 +24,16 @@ public class PathElement {
         if (directory && !alreadyHasTerminalSlash) {
             normalizedRawPath = normalizedRawPath.trim() + File.separator;
         }
-        if (!normalizedRawPath.startsWith("/")) {
-            normalizedRawPath = "/" + normalizedRawPath;
-        }
         return new PathElement(normalizedRawPath);
+    }
+
+    public Path toPath() {
+        return Paths.get(rawPath);
     }
 
     public URL toUrl() {
         try {
-            return new URL("file:" + rawPath);
+            return new URL("file:" + (!rawPath.startsWith("/") ? "/" : "") + rawPath);
         } catch (MalformedURLException e) {
             // Surely dead code as MalformedURLException is raised when protocol is not recognised
             throw new IllegalStateException(e);
@@ -38,7 +41,11 @@ public class PathElement {
     }
 
     public boolean matches(Gav gav) {
-        return gav.matchesPath(rawPath);
+        return gav.matchesJar(rawPath);
+    }
+
+    public boolean matches(Collection<Gav> gavs) {
+        return gavs.stream().anyMatch(gav -> gav.matchesJar(rawPath));
     }
 
     @Override
@@ -57,5 +64,10 @@ public class PathElement {
     @Override
     public int hashCode() {
         return Objects.hash(rawPath);
+    }
+
+    @Override
+    public int compareTo(PathElement o) {
+        return rawPath.compareTo(o.rawPath);
     }
 }

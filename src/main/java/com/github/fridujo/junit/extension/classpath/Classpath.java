@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Classpath {
@@ -34,11 +33,10 @@ public class Classpath {
         return urlClassLoader;
     }
 
-    public Classpath removeJars(String[] jarDescriptions) {
+    public Classpath removeJars(String[] gavDescriptions) {
         Set<PathElement> newPaths = new HashSet<>(pathElements);
-        Arrays.stream(jarDescriptions)
-            .map(jd -> "(.*)" + Pattern.quote(jd) + "(.*)" + Pattern.quote(".jar"))
-            .map(Pattern::compile)
+        Arrays.stream(gavDescriptions)
+            .map(Gav::parse)
             .forEach(p -> newPaths.removeIf(pe -> pe.matches(p)));
         return new Classpath(newPaths);
     }

@@ -5,7 +5,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.regex.Pattern;
+import java.util.Objects;
 
 public class PathElement {
     private final String rawPath;
@@ -37,12 +37,25 @@ public class PathElement {
         }
     }
 
-    boolean matches(Pattern pattern) {
-        return pattern.matcher(rawPath).matches();
+    public boolean matches(Gav gav) {
+        return gav.matchesPath(rawPath);
     }
 
     @Override
     public String toString() {
         return rawPath;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PathElement that = (PathElement) o;
+        return rawPath.equals(that.rawPath);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(rawPath);
     }
 }

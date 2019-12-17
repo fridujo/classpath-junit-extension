@@ -26,10 +26,22 @@ public class ModifiedClasspathExtension implements InvocationInterceptor {
             .removeGavs(annotation.excludeGavs())
             .newClassLoader();
 
-        invokeMethodWithModifiedClasspath(
-            invocationContext.getExecutable().getDeclaringClass().getName(),
-            invocationContext.getExecutable().getName(),
-            modifiedClassLoader);
+        ClassLoader currentThreadPreviousClassLoader = replaceCurrentThreadClassLoader(modifiedClassLoader);
+
+        try {
+            invokeMethodWithModifiedClasspath(
+                invocationContext.getExecutable().getDeclaringClass().getName(),
+                invocationContext.getExecutable().getName(),
+                modifiedClassLoader);
+        } finally {
+            Thread.currentThread().setContextClassLoader(currentThreadPreviousClassLoader);
+        }
+    }
+
+    private ClassLoader replaceCurrentThreadClassLoader(ClassLoader modifiedClassLoader) {
+        ClassLoader currentThreadPreviousClassLoader = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(modifiedClassLoader);
+        return currentThreadPreviousClassLoader;
     }
 
     private void invokeMethodWithModifiedClasspath(String className, String methodName, ClassLoader classLoader) {

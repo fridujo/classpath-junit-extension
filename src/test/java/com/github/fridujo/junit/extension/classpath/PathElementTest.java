@@ -10,6 +10,4 @@ class PathElementTest {
     void toString_displays_the_path_for_debug_purposes() {
         assertThat(PathElement.create("/var/log/messages")).hasToString("/var/log/messages");
     }
-    
-
 }

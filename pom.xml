@@ -6,8 +6,9 @@
 
     <groupId>com.github.fridujo</groupId>
     <artifactId>classpath-junit-extension</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 
+    <name>classpath-junit-extension</name>
     <description>JUnit5 extension to run tests with classpath customizations</description>
     <url>https://github.com/fridujo/classpath-junit-extension</url>
 

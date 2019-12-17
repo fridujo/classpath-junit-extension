@@ -1,6 +1,9 @@
 # Classpath modification extension for JUnit5
 [![Build Status](https://travis-ci.com/fridujo/classpath-junit-extension.svg?branch=master)](https://travis-ci.com/fridujo/classpath-junit-extension)
 [![Coverage Status](https://codecov.io/gh/fridujo/classpath-junit-extension/branch/master/graph/badge.svg)](https://codecov.io/gh/fridujo/classpath-junit-extension/)
+[![Maven Central](https://img.shields.io/maven-central/v/com.github.fridujo/classpath-junit-extension.svg)](https://search.maven.org/#search|ga|1|a:"classpath-junit-extension")
+[![JitPack](https://jitpack.io/v/fridujo/classpath-junit-extension.svg)](https://jitpack.io/#fridujo/classpath-junit-extension)
+[![License](https://img.shields.io/github/license/fridujo/classpath-junit-extension.svg)](https://opensource.org/licenses/Apache-2.0)
 
 Extension to run tests with classpath customizations
 
@@ -50,7 +53,7 @@ Add the following dependency to your **pom.xml**
 <dependency>
     <groupId>com.github.fridujo</groupId>
     <artifactId>classpath-junit-extension</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -66,7 +69,7 @@ repositories {
 
 dependencies {
 	// ...
-	testCompile('com.github.fridujo:classpath-junit-extension:1.0.0-SNAPSHOT')
+	testCompile('com.github.fridujo:classpath-junit-extension:1.0.0')
 	// ...
 }
 ```

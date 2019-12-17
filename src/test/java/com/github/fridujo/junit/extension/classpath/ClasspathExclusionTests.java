@@ -42,6 +42,13 @@ class ClasspathExclusionTests {
     }
 
     @Test
+    @ModifiedClasspath(excludeJars = "guava:guava")
+    void current_thread_classLoader_is_also_replaced() {
+        assertThatExceptionOfType(ClassNotFoundException.class)
+            .isThrownBy(() -> Thread.currentThread().getContextClassLoader().loadClass("com.google.common.collect.Maps"));
+    }
+
+    @Test
     void excluding_non_matching_gav_throws() {
         assertThatExceptionOfType(NoMatchingClasspathElementFoundException.class)
             .isThrownBy(() -> Classpath.current().removeGav("grId:not_existing:1.2-RC3"))

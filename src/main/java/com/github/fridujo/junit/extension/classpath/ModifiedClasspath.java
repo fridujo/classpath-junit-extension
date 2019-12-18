@@ -46,4 +46,10 @@ public @interface ModifiedClasspath {
      */
     String[] excludeJars() default {};
 
+    /**
+     * Will replace production code by the given <b>absolute</b> GAV, meaning groupId and version must be present.
+     * <p>
+     * This is likely to fail if not replaced by an equivalent code (say a previous version of the code).
+     */
+    String replaceProductionCode() default "";
 }

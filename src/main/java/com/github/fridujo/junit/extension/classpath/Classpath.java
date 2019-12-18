@@ -5,6 +5,7 @@ import static java.util.Arrays.stream;
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -86,6 +87,26 @@ public class Classpath {
             gavsToRemove.removeAll(gavsToKeep);
             newPaths.removeIf(pe -> pe.matches(gavsToRemove));
         }
+        return new Classpath(newPaths, context);
+    }
+
+    public Classpath replaceProductionCode(String gavDescription) {
+        if (gavDescription.isEmpty()) {
+            return this;
+        }
+        Gav gav = Gav.parse(gavDescription);
+        if (!gav.isAbsolute()) {
+            throw new IllegalArgumentException("A GAV replacing productionCode must be absolute");
+        }
+        Set<PathElement> newPaths = new TreeSet<>(pathElements);
+        newPaths.removeIf(pe -> pe.toPath().endsWith("target" + File.separator + "classes"));
+        // TODO cleaner way to get the localRepo path ?
+        // TODO download if not present
+        PathElement replacementPath = PathElement.create(System.getProperty("user.home") + File.separator + ".m2" + File.separator + "repository" + File.separator + gav.toMavenRepositoryRelativePath());
+        if (!Files.exists(replacementPath.toPath())) {
+            throw new IllegalArgumentException("Replacement does not exists in local repository: " + replacementPath);
+        }
+        newPaths.add(replacementPath);
         return new Classpath(newPaths, context);
     }
 }

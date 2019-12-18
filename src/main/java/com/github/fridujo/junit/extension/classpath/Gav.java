@@ -73,4 +73,13 @@ public class Gav {
     public int hashCode() {
         return Objects.hash(artifactId, groupId, version);
     }
+
+    public boolean isAbsolute() {
+        return groupId != null && version != null;
+    }
+
+    public String toMavenRepositoryRelativePath() {
+        return groupId.replace('.', File.separatorChar) + File.separatorChar + artifactId + File.separatorChar + version + File.separatorChar
+            + artifactId + "-" + version + ".jar";
+    }
 }

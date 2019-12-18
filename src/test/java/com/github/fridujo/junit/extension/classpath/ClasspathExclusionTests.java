@@ -3,9 +3,15 @@ package com.github.fridujo.junit.extension.classpath;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class ClasspathExclusionTests {
+
+    @BeforeEach
+    void setUp() {
+        System.out.println("lol");
+    }
 
     @Test
     void no_exclusion() throws ClassNotFoundException {

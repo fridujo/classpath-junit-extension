@@ -1,7 +1,9 @@
 package com.github.fridujo.junit.extension.classpath;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.InvocationInterceptor;
@@ -21,14 +23,16 @@ public class ModifiedClasspathExtension implements InvocationInterceptor {
         ClasspathContext context = store.getOrComputeIfAbsent(ClasspathContext.class);
 
         ModifiedClasspath annotation = invocationContext.getExecutable().getAnnotation(ModifiedClasspath.class);
-        ClassLoader modifiedClassLoader = Classpath.current(context)
+        Classpath classpath = Classpath.current(context)
             .removeJars(annotation.excludeJars())
             .removeGavs(annotation.excludeGavs())
-            .newClassLoader();
+            .replacePaths(Arrays.stream(annotation.replaceGavs()).map(rp -> new ReplacePathDeclaration(Gav.parse(rp.original()), Gav.parse(rp.replacement()))).collect(Collectors.toList()));
+        ClassLoader modifiedClassLoader = classpath.newClassLoader();
 
         ClassLoader currentThreadPreviousClassLoader = replaceCurrentThreadClassLoader(modifiedClassLoader);
 
         try {
+            System.out.println("Launching test with classpath:\n" + classpath + "\n");
             invokeMethodWithModifiedClasspath(
                 invocationContext.getExecutable().getDeclaringClass().getName(),
                 invocationContext.getExecutable().getName(),

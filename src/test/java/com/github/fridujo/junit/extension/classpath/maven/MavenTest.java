@@ -25,4 +25,13 @@ class MavenTest {
             Gav.parse("org.apiguardian:apiguardian-api:1.1.0")
         );
     }
+
+    @Test
+    void download_arbitrary_dep() {
+        Gav gav = Gav.parse("junit-jupiter-api");
+        PathElement pathElement = Classpath.current().pathElements.stream().filter(pe -> pe.matches(gav)).findFirst().get();
+
+        Set<Artifact> paths = Maven.from(pathElement).get().download(Gav.parse("com.yammer.metrics:metrics-core:2.2.0"));
+        System.out.println(paths);
+    }
 }

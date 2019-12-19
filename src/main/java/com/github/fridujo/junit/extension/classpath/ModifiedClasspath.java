@@ -46,4 +46,5 @@ public @interface ModifiedClasspath {
      */
     String[] excludeJars() default {};
 
+    ReplaceGav[] replaceGavs() default {};
 }

@@ -8,9 +8,12 @@ import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+
+import com.github.fridujo.junit.extension.classpath.maven.Artifact;
 
 public class Classpath {
 
@@ -87,5 +90,32 @@ public class Classpath {
             newPaths.removeIf(pe -> pe.matches(gavsToRemove));
         }
         return new Classpath(newPaths, context);
+    }
+
+    public Classpath replacePaths(List<ReplacePathDeclaration> replaces) {
+        if (replaces.isEmpty())
+            return this;
+        Set<ReplacePathDeclaration> notMatchingDeclarations = replaces.stream().filter(r -> !pathElements.stream().anyMatch(pe -> pe.matches(r.original))).collect(Collectors.toSet());
+        if (!notMatchingDeclarations.isEmpty()) {
+            throw new NoMatchingClasspathElementFoundException(notMatchingDeclarations.stream().map(r -> r.original).collect(Collectors.toSet()));
+        }
+        PathElement firstMatch = pathElements.stream().filter(pe -> pe.matches(replaces.get(0).original)).findFirst().get();
+        Set<Artifact> newDependencies = replaces.stream().flatMap(r -> context.download(firstMatch, r.replacement)).collect(Collectors.toSet());
+
+        Classpath classpathWithoutOriginals = removeGavs(replaces.stream().map(r -> r.original).map(Gav::toString).collect(Collectors.toSet()).toArray(new String[0]));
+
+        // Remove conflicting dependencies
+        newDependencies.removeIf(a -> classpathWithoutOriginals.pathElements.stream().anyMatch(pe -> pe.matches(a.gav)));
+
+        Set<PathElement> newPaths = new TreeSet<>(classpathWithoutOriginals.pathElements);
+
+        newPaths.addAll(newDependencies.stream().map(a -> a.pathElement).collect(Collectors.toList()));
+
+        return new Classpath(newPaths, classpathWithoutOriginals.context);
+    }
+
+    @Override
+    public String toString() {
+        return pathElements.stream().map(PathElement::toString).collect(Collectors.joining("\n"));
     }
 }

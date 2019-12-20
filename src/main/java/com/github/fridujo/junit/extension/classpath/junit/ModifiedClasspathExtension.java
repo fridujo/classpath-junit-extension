@@ -1,4 +1,4 @@
-package com.github.fridujo.junit.extension.classpath;
+package com.github.fridujo.junit.extension.classpath.junit;
 
 import java.lang.reflect.Method;
 import java.util.Optional;
@@ -7,6 +7,9 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.InvocationInterceptor;
 import org.junit.jupiter.api.extension.ReflectiveInvocationContext;
 import org.junit.platform.commons.util.ReflectionUtils;
+
+import com.github.fridujo.junit.extension.classpath.Classpath;
+import com.github.fridujo.junit.extension.classpath.ClasspathContext;
 
 public class ModifiedClasspathExtension implements InvocationInterceptor {
 

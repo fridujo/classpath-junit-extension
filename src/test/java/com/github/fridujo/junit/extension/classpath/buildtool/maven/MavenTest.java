@@ -1,4 +1,4 @@
-package com.github.fridujo.junit.extension.classpath.maven;
+package com.github.fridujo.junit.extension.classpath.buildtool.maven;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

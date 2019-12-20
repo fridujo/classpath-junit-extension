@@ -1,4 +1,4 @@
-package com.github.fridujo.junit.extension.classpath;
+package com.github.fridujo.junit.extension.classpath.utils;
 
 import java.util.Iterator;
 import java.util.function.BiFunction;

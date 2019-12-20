@@ -59,6 +59,11 @@ public class Gav {
         return jarPattern.matcher(rawJarPath).matches();
     }
 
+    public String toRelativePath() {
+        return groupId.replace('.', File.separatorChar) + File.separatorChar + artifactId + File.separatorChar + version + File.separatorChar
+            + artifactId + '-' + version + ".jar";
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -12,21 +12,18 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import com.github.fridujo.junit.extension.classpath.buildtool.Artifact;
 import com.github.fridujo.junit.extension.classpath.utils.Streams;
 
 public class Classpath {
 
     public final Set<PathElement> pathElements;
 
-    private final ClasspathContext context;
+    public final ClasspathContext context;
 
     private Classpath(Set<PathElement> pathElements, ClasspathContext context) {
         this.pathElements = Collections.unmodifiableSet(new TreeSet<>(pathElements));
         this.context = context;
-    }
-
-    public static Classpath current() {
-        return current(new ClasspathContext());
     }
 
     public static Classpath current(ClasspathContext context) {
@@ -34,15 +31,18 @@ public class Classpath {
         Set<PathElement> pathElements = stream(rawClasspath.split(File.pathSeparator))
             .map(PathElement::create)
             .collect(Collectors.toSet());
-        return new Classpath(pathElements, context);
+        return new Classpath(pathElements, context != null ? context : new ClasspathContext(pathElements));
+    }
+
+    public static Classpath current() {
+        return current(null);
     }
 
     public ClassLoader newClassLoader() {
         ClassLoader parent = this.getClass().getClassLoader().getParent();
-        final URLClassLoader urlClassLoader = new URLClassLoader(
-            pathElements.stream().map(PathElement::toUrl).collect(Collectors.toList()).toArray(new URL[0]),
+        return new URLClassLoader(
+            pathElements.stream().map(PathElement::toUrl).toArray(URL[]::new),
             parent);
-        return urlClassLoader;
     }
 
     public Classpath removeJars(String[] excludeJars) {
@@ -60,7 +60,7 @@ public class Classpath {
     public Classpath removeGav(String gavDescription) throws NoMatchingClasspathElementFoundException {
         Gav gav = Gav.parse(gavDescription);
 
-        if (pathElements.stream().filter(pe -> pe.matches(gav)).count() == 0) {
+        if (pathElements.stream().noneMatch(pe -> pe.matches(gav))) {
             throw new NoMatchingClasspathElementFoundException(gav);
         }
 
@@ -75,17 +75,18 @@ public class Classpath {
         Set<PathElement> newPaths = new TreeSet<>(pathElements);
         newPaths.removeIf(pe -> pe.matches(gav));
 
-        Set<Gav> gavsToRemove = context.listDependencies(matchingPath);
+        Set<Artifact> artifactsToRemove = context.listDependencies(matchingPath);
 
-        if (!gavsToRemove.isEmpty()) {
-            Set<Gav> gavsToKeep = new HashSet<>();
+        if (!artifactsToRemove.isEmpty()) {
+            Set<Artifact> gavsToKeep = new HashSet<>();
             for (PathElement pe : pathElements) {
-                if (!pe.matches(gav) && !gavsToRemove.stream().anyMatch(g -> pe.matches(g))) {
+                if (!pe.matches(gav) && artifactsToRemove.stream().noneMatch(a -> pe.matches(a.gav))) {
                     gavsToKeep.addAll(context.listDependencies(pe));
                 }
             }
 
-            gavsToRemove.removeAll(gavsToKeep);
+            artifactsToRemove.removeAll(gavsToKeep);
+            Set<Gav> gavsToRemove = artifactsToRemove.stream().map(a -> a.gav).collect(Collectors.toSet());
             newPaths.removeIf(pe -> pe.matches(gavsToRemove));
         }
         return new Classpath(newPaths, context);

@@ -20,13 +20,15 @@ public class ModifiedClasspathExtension implements InvocationInterceptor {
                                     ExtensionContext extensionContext) {
         silentlyInvokeOriginalMethod(invocation);
 
-        ExtensionContext.Store store = extensionContext.getStore(namespace);
-        ClasspathContext context = store.getOrComputeIfAbsent(ClasspathContext.class);
+        ExtensionContext.Store store = extensionContext.getRoot().getStore(namespace);
+        ClasspathContext context = store.get(ClasspathContext.class, ClasspathContext.class);
 
         ModifiedClasspath annotation = invocationContext.getExecutable().getAnnotation(ModifiedClasspath.class);
-        ClassLoader modifiedClassLoader = Classpath.current(context)
+        Classpath classpath = Classpath.current(context)
             .removeJars(annotation.excludeJars())
-            .removeGavs(annotation.excludeGavs())
+            .removeGavs(annotation.excludeGavs());
+        store.put(ClasspathContext.class, classpath.context);
+        ClassLoader modifiedClassLoader = classpath
             .newClassLoader();
 
         ClassLoader currentThreadPreviousClassLoader = replaceCurrentThreadClassLoader(modifiedClassLoader);
@@ -70,7 +72,7 @@ public class ModifiedClasspathExtension implements InvocationInterceptor {
     private void silentlyInvokeOriginalMethod(Invocation<Void> invocation) {
         try {
             invocation.proceed();
-        } catch (Throwable t) {
+        } catch (Throwable ignored) {
         }
     }
 }

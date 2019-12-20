@@ -7,8 +7,11 @@ import java.util.stream.Stream;
 public class Streams {
 
     public static <T, U> U reduce(Stream<T> stream, U initialValue, BiFunction<U, T, U> accumulator) {
+        return reduce(stream.iterator(), initialValue, accumulator);
+    }
+
+    public static <T, U> U reduce(Iterator<T> iterator, U initialValue, BiFunction<U, T, U> accumulator) {
         U value = initialValue;
-        Iterator<T> iterator = stream.iterator();
         while (iterator.hasNext()) {
             value = accumulator.apply(value, iterator.next());
         }

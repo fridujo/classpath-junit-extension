@@ -1,54 +1,46 @@
 package com.github.fridujo.junit.extension.classpath.buildtool.maven;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.maven.model.Model;
+import org.apache.maven.model.Dependency;
 
 import com.github.fridujo.junit.extension.classpath.Gav;
 import com.github.fridujo.junit.extension.classpath.PathElement;
+import com.github.fridujo.junit.extension.classpath.buildtool.Artifact;
+import com.github.fridujo.junit.extension.classpath.buildtool.BuildTool;
 
-public class Maven extends MavenOperations {
+class Maven extends MavenOperations implements BuildTool {
 
-    private final Map<PathElement, Set<Gav>> dependenciesCache = new LinkedHashMap<PathElement, Set<Gav>>() {
+    private final Map<PathElement, Set<Artifact>> dependenciesCache = new LinkedHashMap<PathElement, Set<Artifact>>() {
         public boolean removeEldestEntry(Map.Entry eldest) {
             return size() > 1000;
         }
     };
+    private final Path mavenHome;
+    private final Path localRepository;
 
-    public Maven(String localRepo) {
-        super(localRepo);
+    Maven(Path mavenHome, Path localRepository) {
+        super(localRepository.toString());
+
+        this.mavenHome = mavenHome;
+        this.localRepository = localRepository;
     }
 
-    public static Optional<Maven> from(PathElement jarPath) {
-        return getNonEffectiveModel(jarPath)
-            .map(nonEffectiveModel -> new Maven(deduceLocalRepo(jarPath, nonEffectiveModel)));
-    }
-
-    private static String deduceLocalRepo(PathElement jarPath, Model nonEffectiveModel) {
-        String rawPath = jarPath.toPath().toString();
-        String groupId = getGroupId(nonEffectiveModel);
-        String version = getVersion(nonEffectiveModel);
-        String mavenInternalStructure = groupId.replace('.', File.separatorChar) + File.separatorChar + nonEffectiveModel.getArtifactId() + File.separatorChar + version + File.separatorChar;
-
-        int i = rawPath.indexOf(mavenInternalStructure);
-        if (i < 0) {
-            throw new IllegalStateException("Loaded a Maven dependency outside a repository");
-        }
-
-        return rawPath.substring(0, i);
-    }
-
-    public Set<Gav> listDependencies(PathElement jarPath) {
+    public Set<Artifact> listDependencies(PathElement jarPath) {
         return dependenciesCache.computeIfAbsent(jarPath, p -> loadMavenProject(p)
             .map(mp -> mp.getDependencies().stream()
                 .filter(d -> !"test".equals(d.getScope()) && !d.isOptional())
-                .map(d -> new Gav(d.getArtifactId(), d.getGroupId(), d.getVersion()))
+                .map(this::buildArtifact)
                 .collect(Collectors.toSet())).orElseGet(Collections::emptySet));
+    }
+
+    private Artifact buildArtifact(Dependency d) {
+        Gav gav = new Gav(d.getArtifactId(), d.getGroupId(), d.getVersion());
+        return new Artifact(gav, PathElement.create(localRepository.toString() + gav.toRelativePath()));
     }
 }

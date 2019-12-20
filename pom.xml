@@ -21,6 +21,7 @@
 
         <junit.jupiter.version>5.5.2</junit.jupiter.version>
         <assertj.version>3.14.0</assertj.version>
+        <mockito-core.version>3.2.4</mockito-core.version>
 
         <maven-javadoc-plugin.version>3.1.1</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.2.0</maven-source-plugin.version>
@@ -81,6 +82,11 @@
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
             <version>${assertj.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito-core.version}</version>
         </dependency>
     </dependencies>
 

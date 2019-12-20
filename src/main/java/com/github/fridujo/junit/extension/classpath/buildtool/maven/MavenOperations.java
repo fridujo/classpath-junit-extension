@@ -1,8 +1,6 @@
 package com.github.fridujo.junit.extension.classpath.buildtool.maven;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,12 +16,10 @@ import org.apache.maven.model.building.DefaultModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuildingException;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuildingResult;
-import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectModelResolver;
 import org.apache.maven.repository.internal.DefaultVersionRangeResolver;
 import org.apache.maven.repository.internal.DefaultVersionResolver;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.internal.impl.DefaultArtifactResolver;
 import org.eclipse.aether.internal.impl.DefaultRemoteRepositoryManager;
@@ -39,9 +35,9 @@ import com.github.fridujo.junit.extension.classpath.PathElement;
 
 abstract class MavenOperations {
 
-    private static final String ESC_SEP = Pattern.quote(File.separator);
+    static final String ESC_SEP = Pattern.quote(File.separator);
 
-    private static final Pattern MAVEN_ARTIFACT_PATH_PATTERN = Pattern.compile("(?:.*)" + ESC_SEP
+    static final Pattern MAVEN_ARTIFACT_PATH_PATTERN = Pattern.compile("(?:.*)" + ESC_SEP
         + "(?<artifactId>.*)" + ESC_SEP + "(?<version>.*)" + ESC_SEP
         + "\\k<artifactId>-\\k<version>" + Pattern.quote(".jar"));
 
@@ -69,41 +65,6 @@ abstract class MavenOperations {
         } catch (NoLocalRepositoryManagerException e) {
             throw new IllegalStateException(e);
         }
-    }
-
-    protected static String getVersion(Model model) {
-        String version = model.getVersion();
-        if (version != null) {
-            return version;
-        }
-        if (model.getParent() == null) {
-            throw new IllegalStateException("[" + model.getArtifactId() + "] No parent POM -> undefined version");
-        }
-        return model.getParent().getVersion();
-    }
-
-    protected static String getGroupId(Model model) {
-        String groupId = model.getGroupId();
-        if (groupId != null) {
-            return groupId;
-        }
-        if (model.getParent() == null) {
-            throw new IllegalStateException("[" + model.getArtifactId() + "] No parent POM -> undefined groupId");
-        }
-        return model.getParent().getGroupId();
-    }
-
-    protected static Optional<Model> getNonEffectiveModel(PathElement jarPath) {
-        Optional<Path> pomPath = getPomPath(jarPath);
-
-        return pomPath.map(pp -> {
-            MavenXpp3Reader reader = new MavenXpp3Reader();
-            try (InputStream is = Files.newInputStream(pp)) {
-                return reader.read(is);
-            } catch (IOException | XmlPullParserException e) {
-                return null;
-            }
-        });
     }
 
     private static Optional<Path> getPomPath(PathElement jarPath) {

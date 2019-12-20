@@ -4,6 +4,9 @@ cache:
     directories:
         - "$HOME/.m2"
 
+before_install:
+    - "export M2_HOME=/usr/local/maven"
+
 script: "mvn verify"
 
 after_success:

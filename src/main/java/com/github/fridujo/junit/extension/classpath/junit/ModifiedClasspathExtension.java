@@ -11,7 +11,7 @@ import org.junit.platform.commons.util.ReflectionUtils;
 import com.github.fridujo.junit.extension.classpath.Classpath;
 import com.github.fridujo.junit.extension.classpath.ClasspathContext;
 
-public class ModifiedClasspathExtension implements InvocationInterceptor {
+class ModifiedClasspathExtension implements InvocationInterceptor {
 
     private final ExtensionContext.Namespace namespace = ExtensionContext.Namespace.create(ModifiedClasspathExtension.class);
 
@@ -23,10 +23,10 @@ public class ModifiedClasspathExtension implements InvocationInterceptor {
         ExtensionContext.Store store = extensionContext.getRoot().getStore(namespace);
         ClasspathContext context = store.get(ClasspathContext.class, ClasspathContext.class);
 
-        ModifiedClasspath annotation = invocationContext.getExecutable().getAnnotation(ModifiedClasspath.class);
+        RemoveDependencies annotation = invocationContext.getExecutable().getAnnotation(RemoveDependencies.class);
         Classpath classpath = Classpath.current(context)
-            .removeJars(annotation.excludeJars())
-            .removeGavs(annotation.excludeGavs());
+            .removeJars(annotation.jars())
+            .removeGavs(annotation.gavs());
         store.put(ClasspathContext.class, classpath.context);
         ClassLoader modifiedClassLoader = classpath
             .newClassLoader();

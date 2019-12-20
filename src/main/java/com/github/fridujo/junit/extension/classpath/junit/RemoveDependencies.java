@@ -15,7 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @Target(ElementType.METHOD)
 @Documented
 @ExtendWith(ModifiedClasspathExtension.class)
-public @interface ModifiedClasspath {
+public @interface RemoveDependencies {
 
     /**
      * Will remove Jars matching the given GAV (groupId:artifactId:version).<br>
@@ -29,7 +29,7 @@ public @interface ModifiedClasspath {
      * <p>
      * If the matching Jars are in a <b>Maven</b> repository, their dependencies (transitive or not) will also be excluded.
      */
-    String[] excludeGavs() default {};
+    String[] gavs() default {};
 
     /**
      * Will remove Jars matching the given GAV (groupId:artifactId:version).<br>
@@ -42,8 +42,7 @@ public @interface ModifiedClasspath {
      * </ul>
      * <p>
      * <p>
-     * In opposition to {@link #excludeGavs()}, their will be no attempt to list and exclude dependencies.
+     * In opposition to {@link #gavs()}, their will be no attempt to list and exclude dependencies.
      */
-    String[] excludeJars() default {};
-
+    String[] jars() default {};
 }

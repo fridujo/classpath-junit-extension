@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import org.junit.jupiter.api.Test;
 
-import com.github.fridujo.junit.extension.classpath.junit.ModifiedClasspath;
+import com.github.fridujo.junit.extension.classpath.junit.RemoveDependencies;
 
 class ClasspathExclusionTests {
 
@@ -15,7 +15,7 @@ class ClasspathExclusionTests {
     }
 
     @Test
-    @ModifiedClasspath(excludeGavs = "junit-jupiter")
+    @RemoveDependencies(gavs = "junit-jupiter")
     void exclusion_of_multiple_gavs_and_their_dependencies() {
         assertThatExceptionOfType(ClassNotFoundException.class)
             .isThrownBy(() -> Class.forName("org.junit.jupiter.api.extension.Extension"));
@@ -25,7 +25,7 @@ class ClasspathExclusionTests {
     }
 
     @Test
-    @ModifiedClasspath(excludeGavs = "guava:guava")
+    @RemoveDependencies(gavs = "guava:guava")
     void exclusion_of_one_gav_and_its_dependencies() {
         assertThatExceptionOfType(ClassNotFoundException.class)
             .isThrownBy(() -> Class.forName("com.google.common.collect.Maps"));
@@ -35,7 +35,7 @@ class ClasspathExclusionTests {
     }
 
     @Test
-    @ModifiedClasspath(excludeJars = "guava:guava")
+    @RemoveDependencies(jars = "guava:guava")
     void exclusion_of_one_jar() throws ClassNotFoundException {
         assertThatExceptionOfType(ClassNotFoundException.class)
             .isThrownBy(() -> Class.forName("com.google.common.collect.Maps"));
@@ -44,7 +44,7 @@ class ClasspathExclusionTests {
     }
 
     @Test
-    @ModifiedClasspath(excludeJars = "guava:guava")
+    @RemoveDependencies(jars = "guava:guava")
     void current_thread_classLoader_is_also_replaced() {
         assertThatExceptionOfType(ClassNotFoundException.class)
             .isThrownBy(() -> Thread.currentThread().getContextClassLoader().loadClass("com.google.common.collect.Maps"));

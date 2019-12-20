@@ -19,7 +19,7 @@ void junit_extension_can_be_loaded() throws ClassNotFoundException {
 }
 
 @Test
-@ModifiedClasspath(excludeGavs = "junit-jupiter-api")
+@RemoveDependencies(excludeGavs = "junit-jupiter-api")
 void junit_extension_cannot_be_loaded() {
     assertThatExceptionOfType(ClassNotFoundException.class)
         .isThrownBy(() -> Class.forName("org.junit.jupiter.api.extension.Extension"));

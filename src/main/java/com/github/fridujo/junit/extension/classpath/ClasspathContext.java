@@ -4,13 +4,13 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 
-import com.github.fridujo.junit.extension.classpath.maven.Maven;
+import com.github.fridujo.junit.extension.classpath.buildtool.maven.Maven;
 
-class ClasspathContext {
+public class ClasspathContext {
 
     private Maven maven;
 
-    Optional<Maven> getMaven(PathElement path) {
+    private Optional<Maven> getMaven(PathElement path) {
         if (maven == null) {
             maven = Maven.from(path).orElse(null);
         }

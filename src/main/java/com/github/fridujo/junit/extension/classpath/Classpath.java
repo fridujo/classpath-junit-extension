@@ -12,6 +12,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import com.github.fridujo.junit.extension.classpath.utils.Streams;
+
 public class Classpath {
 
     public final Set<PathElement> pathElements;
@@ -27,7 +29,7 @@ public class Classpath {
         return current(new ClasspathContext());
     }
 
-    static Classpath current(ClasspathContext context) {
+    public static Classpath current(ClasspathContext context) {
         String rawClasspath = System.getProperty("java.class.path");
         Set<PathElement> pathElements = stream(rawClasspath.split(File.pathSeparator))
             .map(PathElement::create)

@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import org.junit.jupiter.api.Test;
 
+import com.github.fridujo.junit.extension.classpath.junit.ModifiedClasspath;
+
 class ClasspathExclusionTests {
 
     @Test

@@ -15,7 +15,7 @@ class ClasspathExclusionTests {
     }
 
     @Test
-    @ModifiedClasspath(excludeGavs = "junit-jupiter")
+    @ModifiedClasspath(excludeDependencies = "junit-jupiter")
     void exclusion_of_multiple_gavs_and_their_dependencies() {
         assertThatExceptionOfType(ClassNotFoundException.class)
             .isThrownBy(() -> Class.forName("org.junit.jupiter.api.extension.Extension"));
@@ -25,7 +25,7 @@ class ClasspathExclusionTests {
     }
 
     @Test
-    @ModifiedClasspath(excludeGavs = "guava:guava")
+    @ModifiedClasspath(excludeDependencies = "guava:guava")
     void exclusion_of_one_gav_and_its_dependencies() {
         assertThatExceptionOfType(ClassNotFoundException.class)
             .isThrownBy(() -> Class.forName("com.google.common.collect.Maps"));
@@ -53,7 +53,7 @@ class ClasspathExclusionTests {
     @Test
     void excluding_non_matching_gav_throws() {
         assertThatExceptionOfType(NoMatchingClasspathElementFoundException.class)
-            .isThrownBy(() -> Classpath.current().removeGav("grId:not_existing:1.2-RC3"))
+            .isThrownBy(() -> Classpath.current().removeDependency("grId:not_existing:1.2-RC3"))
             .withMessage("grId:not_existing:1.2-RC3 found no match in classpath");
     }
 }

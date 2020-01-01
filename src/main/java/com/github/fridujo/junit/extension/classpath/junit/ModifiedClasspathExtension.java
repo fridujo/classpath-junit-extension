@@ -9,7 +9,7 @@ import org.junit.jupiter.api.extension.ReflectiveInvocationContext;
 import org.junit.platform.commons.util.ReflectionUtils;
 
 import com.github.fridujo.junit.extension.classpath.Classpath;
-import com.github.fridujo.junit.extension.classpath.ClasspathContext;
+import com.github.fridujo.junit.extension.classpath.buildtool.BuildTool;
 
 public class ModifiedClasspathExtension implements InvocationInterceptor {
 
@@ -21,13 +21,14 @@ public class ModifiedClasspathExtension implements InvocationInterceptor {
         silentlyInvokeOriginalMethod(invocation);
 
         ExtensionContext.Store store = extensionContext.getRoot().getStore(namespace);
-        ClasspathContext context = store.get(ClasspathContext.class, ClasspathContext.class);
+        BuildTool buildTool = store.get(BuildTool.class, BuildTool.class);
 
         ModifiedClasspath annotation = invocationContext.getExecutable().getAnnotation(ModifiedClasspath.class);
-        Classpath classpath = Classpath.current(context)
+        Classpath classpath = Classpath.current(buildTool)
             .removeJars(annotation.excludeJars())
-            .removeGavs(annotation.excludeGavs());
-        store.put(ClasspathContext.class, classpath.context);
+            .removeDependencies(annotation.excludeDependencies())
+            .addDependencies(annotation.addDependencies());
+        store.put(BuildTool.class, classpath.buildTool);
         ClassLoader modifiedClassLoader = classpath
             .newClassLoader();
 

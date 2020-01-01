@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import java.io.File;
 
 import org.assertj.core.api.SoftAssertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -62,5 +63,25 @@ class GavTest {
         assertThatExceptionOfType(IllegalArgumentException.class)
             .isThrownBy(() -> Gav.parse(gavExpression))
             .withMessage("Not a GAV expression");
+    }
+
+    @Test
+    void absolute_gav_has_all_info() {
+        Gav absoluteGav = Gav.parseAbsolute("org.junit.jupiter:junit-jupiter-params:5.5.2");
+
+        assertThat(absoluteGav.groupId).isEqualTo("org.junit.jupiter");
+        assertThat(absoluteGav.artifactId).isEqualTo("junit-jupiter-params");
+        assertThat(absoluteGav.version).isEqualTo("5.5.2");
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "junit-jupiter-params",
+        "org.junit.jupiter:junit-jupiter-params",
+    })
+    void absolute_gav_fails_to_parse_is_groupId_or_version_is_missing(String partialGav) {
+        assertThatExceptionOfType(IllegalArgumentException.class)
+            .isThrownBy(() -> Gav.parseAbsolute(partialGav))
+            .withMessage("Not an Absolute GAV expression");
     }
 }

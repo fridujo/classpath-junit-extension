@@ -70,4 +70,8 @@ public class PathElement implements Comparable<PathElement> {
     public int compareTo(PathElement o) {
         return rawPath.compareTo(o.rawPath);
     }
+
+    public boolean exists() {
+        return Files.exists(toPath());
+    }
 }

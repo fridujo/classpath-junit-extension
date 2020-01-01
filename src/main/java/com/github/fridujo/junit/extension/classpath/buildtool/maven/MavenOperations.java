@@ -4,8 +4,10 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,6 +22,12 @@ import org.apache.maven.project.ProjectBuildingRequest;
 import org.apache.maven.project.ProjectModelResolver;
 import org.apache.maven.repository.internal.DefaultVersionRangeResolver;
 import org.apache.maven.repository.internal.DefaultVersionResolver;
+import org.apache.maven.shared.invoker.DefaultInvocationRequest;
+import org.apache.maven.shared.invoker.DefaultInvoker;
+import org.apache.maven.shared.invoker.InvocationRequest;
+import org.apache.maven.shared.invoker.InvocationResult;
+import org.apache.maven.shared.invoker.Invoker;
+import org.apache.maven.shared.invoker.MavenInvocationException;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.internal.impl.DefaultArtifactResolver;
 import org.eclipse.aether.internal.impl.DefaultRemoteRepositoryManager;
@@ -103,6 +111,39 @@ abstract class MavenOperations {
             return Optional.of(result.getEffectiveModel());
         } catch (ModelBuildingException e) {
             return Optional.empty();
+        }
+    }
+
+    protected Result executeGoal(String... cmdLine) {
+        InvocationRequest request = new DefaultInvocationRequest();
+        request.setGoals(Arrays.asList(cmdLine));
+        Path pomPath = Paths.get("").toAbsolutePath().resolve("pom.xml");
+        if (Files.exists(pomPath)) {
+            // Useful to lookup for declared remote repositories (other than central)
+            request.setPomFile(pomPath.toFile());
+        }
+
+        Invoker invoker = new DefaultInvoker();
+
+        try {
+            InvocationResult result = invoker.execute(request);
+            return new Result(result.getExitCode());
+        } catch (MavenInvocationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    static final class Result {
+        private final int exitCode;
+
+        private Result(int exitCode) {
+            this.exitCode = exitCode;
+        }
+
+        public <THROWABLE extends Throwable> void throwsOnError(Supplier<? extends THROWABLE> exceptionSupplier) throws THROWABLE {
+            if (exitCode != 0) {
+                throw exceptionSupplier.get();
+            }
         }
     }
 }

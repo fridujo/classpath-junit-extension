@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 
 public class Gav {
     private static final Pattern GAV_PATTERN = Pattern.compile("(?:(?<groupId>[^:]+):)?(?<artifactId>[^:]+)(?::(?<version>.+))?");
+    private static final Pattern ABSOLUTE_GAV_PATTERN = Pattern.compile("(?<groupId>[^:]+):(?<artifactId>[^:]+):(?<version>.+)");
     public final String artifactId;
     public final String groupId;
     public final String version;
@@ -38,6 +39,14 @@ public class Gav {
         final Matcher matcher = GAV_PATTERN.matcher(gav.trim());
         if (!matcher.matches()) {
             throw new IllegalArgumentException("Not a GAV expression");
+        }
+        return new Gav(matcher.group("artifactId"), matcher.group("groupId"), matcher.group("version"));
+    }
+
+    public static Gav parseAbsolute(String gav) {
+        final Matcher matcher = ABSOLUTE_GAV_PATTERN.matcher(gav.trim());
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException("Not an Absolute GAV expression");
         }
         return new Gav(matcher.group("artifactId"), matcher.group("groupId"), matcher.group("version"));
     }

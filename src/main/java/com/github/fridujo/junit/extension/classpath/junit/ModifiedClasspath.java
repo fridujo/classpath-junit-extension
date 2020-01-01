@@ -9,7 +9,11 @@ import java.lang.annotation.Target;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 /**
- * Modify the <b>current</b> classpath before running the marked test.
+ * Modify the <b>current</b> classpath before running the marked test.<br>
+ * <br>
+ * <p style="color: red;"><b>
+ * Most of the parameters are available if the project uses one of the supported {@link com.github.fridujo.junit.extension.classpath.buildtool Build Tools}.
+ * </b>, however {@link #excludeJars()} can be used in any case.</p><br>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
@@ -18,23 +22,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 public @interface ModifiedClasspath {
 
     /**
-     * Will remove Jars matching the given GAV (groupId:artifactId:version).<br>
+     * Will remove Jars matching the given GAVs (groupId:artifactId:version).<br>
      * <p>
-     * Gav can have the following structures:
-     * <ul>
-     * <li>artifactId : aka JAR name</li>
-     * <li>groupId:artifactId</li>
-     * <li>groupId:artifactId:version</li>
-     * </ul>
-     * <p>
-     * If the matching Jars are in a <b>Maven</b> repository, their dependencies (transitive or not) will also be excluded.
-     */
-    String[] excludeGavs() default {};
-
-    /**
-     * Will remove Jars matching the given GAV (groupId:artifactId:version).<br>
-     * <p>
-     * Gav can have the following structures:
+     * GAVs can have the following structures:
      * <ul>
      * <li><b>artifactId</b>: aka JAR name</li>
      * <li><b>groupId:artifactId</b></li>
@@ -42,8 +32,33 @@ public @interface ModifiedClasspath {
      * </ul>
      * <p>
      * <p>
-     * In opposition to {@link #excludeGavs()}, their will be no attempt to list and exclude dependencies.
+     * In opposition to {@link #excludeDependencies()}, their will be no attempt to list and exclude dependencies.
      */
     String[] excludeJars() default {};
 
+    /**
+     * Will remove Dependencies matching the given GAVs (groupId:artifactId:version).<br>
+     * <p>
+     * GAVs can have the following structures:
+     * <ul>
+     * <li>artifactId : aka JAR name</li>
+     * <li>groupId:artifactId</li>
+     * <li>groupId:artifactId:version</li>
+     * </ul>
+     * <p>
+     * Their dependencies (transitive or not) will also be excluded.
+     */
+    String[] excludeDependencies() default {};
+
+    /**
+     * Will add Dependencies matching the given <u>Absolute</u> GAV (groupId:artifactId:version).<br>
+     * <p>
+     * <u>Absolute</u> Gav must have the following structures:
+     * <ul>
+     * <li>groupId:artifactId:version</li>
+     * </ul>
+     * <p>
+     * Their dependencies (transitive or not) will also be added.
+     */
+    String[] addDependencies() default {};
 }

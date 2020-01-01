@@ -5,7 +5,7 @@ import java.util.Objects;
 import com.github.fridujo.junit.extension.classpath.Gav;
 import com.github.fridujo.junit.extension.classpath.PathElement;
 
-public class Artifact {
+public class Artifact implements Comparable<Artifact> {
     public final Gav gav;
     public final PathElement path;
 
@@ -26,5 +26,15 @@ public class Artifact {
     @Override
     public int hashCode() {
         return Objects.hash(gav, path);
+    }
+
+    @Override
+    public String toString() {
+        return gav + " (" + path + ")";
+    }
+
+    @Override
+    public int compareTo(Artifact o) {
+        return path.compareTo(o.path);
     }
 }

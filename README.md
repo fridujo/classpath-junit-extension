@@ -5,10 +5,12 @@
 [![JitPack](https://jitpack.io/v/fridujo/classpath-junit-extension.svg)](https://jitpack.io/#fridujo/classpath-junit-extension)
 [![License](https://img.shields.io/github/license/fridujo/classpath-junit-extension.svg)](https://opensource.org/licenses/Apache-2.0)
 
-Extension to run tests with classpath customizations
+Extension to run tests with classpath customizations.
 
 The main goal of this project is to allow to write tests (most probably **integration** ones) against various classpaths
 without the need to create complex configurations astride _build tool_ and code.
+
+For example, testing a library behavior without an optional dependency.
 
 ## Sample
 
@@ -19,7 +21,7 @@ void junit_extension_can_be_loaded() throws ClassNotFoundException {
 }
 
 @Test
-@ModifiedClasspath(excludeGavs = "junit-jupiter-api")
+@ModifiedClasspath(excludeDependencies = "junit-jupiter-api")
 void junit_extension_cannot_be_loaded() {
     assertThatExceptionOfType(ClassNotFoundException.class)
         .isThrownBy(() -> Class.forName("org.junit.jupiter.api.extension.Extension"));
@@ -33,7 +35,8 @@ Use the `maven-invoker-plugin` with **pom.xml** template (see an example [here](
 Currently this extension uses a _workaround_ to get things done, but it is waiting for [JUnit5 #201](https://github.com/junit-team/junit5/issues/201) to get a cleaner approach at this.
 
 Next things to do:
-* Use Maven dependency mechanism to add jars that are not already in the classpath
+* Replace dependencies by other ones (different versions or implementations)
+* Support other **Build Tools** (Gradle, SBT, Ivy, etc.)
 * Make the annotation
   * available at class level
   * work in `@Nested` tests

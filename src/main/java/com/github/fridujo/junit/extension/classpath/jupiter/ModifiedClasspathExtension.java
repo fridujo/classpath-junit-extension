@@ -1,4 +1,4 @@
-package com.github.fridujo.junit.extension.classpath.junit;
+package com.github.fridujo.junit.extension.classpath.jupiter;
 
 import java.lang.reflect.Method;
 import java.util.Optional;
@@ -11,7 +11,7 @@ import org.junit.platform.commons.util.ReflectionUtils;
 import com.github.fridujo.junit.extension.classpath.Classpath;
 import com.github.fridujo.junit.extension.classpath.buildtool.BuildTool;
 
-public class ModifiedClasspathExtension implements InvocationInterceptor {
+class ModifiedClasspathExtension implements InvocationInterceptor {
 
     private final ExtensionContext.Namespace namespace = ExtensionContext.Namespace.create(ModifiedClasspathExtension.class);
 

@@ -10,7 +10,7 @@ import java.time.temporal.ChronoUnit;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
-import com.github.fridujo.junit.extension.classpath.junit.ModifiedClasspath;
+import com.github.fridujo.junit.extension.classpath.jupiter.ModifiedClasspath;
 
 class ClasspathAdditionTests {
 

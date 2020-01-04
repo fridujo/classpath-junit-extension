@@ -1,4 +1,4 @@
-package com.github.fridujo.junit.extension.classpath.junit;
+package com.github.fridujo.junit.extension.classpath.jupiter;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

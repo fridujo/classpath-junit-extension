@@ -29,6 +29,9 @@ public class Gav {
     }
 
     private static Pattern buildJarPattern(String artifactId, String groupId, String version) {
+        if (artifactId == null) {
+            return null;
+        }
         if (groupId == null) {
             return Pattern.compile("(.*)" + Pattern.quote(artifactId) + "([^\\" + File.separatorChar + "]*)" + Pattern.quote(".jar"));
         }
@@ -60,7 +63,7 @@ public class Gav {
     }
 
     public boolean matchesJar(String rawJarPath) {
-        return jarPattern.matcher(rawJarPath).matches();
+        return jarPattern != null ? jarPattern.matcher(rawJarPath).matches() : false;
     }
 
     public String toRelativePath() {
@@ -94,5 +97,17 @@ public class Gav {
     @Override
     public int hashCode() {
         return Objects.hash(artifactId, groupId, version);
+    }
+
+    public Gav withVersion(String version) {
+        return new Gav(artifactId, groupId, version);
+    }
+
+    public Gav completeWith(Gav complement) {
+        return new Gav(
+            artifactId != null ? artifactId : complement.artifactId,
+            groupId != null ? groupId : complement.groupId,
+            version != null ? version : complement.version
+        );
     }
 }

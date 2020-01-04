@@ -19,6 +19,7 @@ import com.github.fridujo.classpath.junit.extension.utils.Streams;
 
 public class Classpath {
 
+    public static final String SYSTEM_PROPERTY = "java.class.path";
     public final Set<PathElement> pathElements;
 
     public final BuildTool buildTool;
@@ -29,7 +30,7 @@ public class Classpath {
     }
 
     public static Classpath current(BuildTool buildTool) {
-        String rawClasspath = System.getProperty("java.class.path");
+        String rawClasspath = System.getProperty(SYSTEM_PROPERTY);
         Set<PathElement> pathElements = stream(rawClasspath.split(File.pathSeparator))
             .map(PathElement::create)
             .collect(Collectors.toSet());

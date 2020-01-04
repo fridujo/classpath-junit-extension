@@ -10,4 +10,6 @@ public interface BuildTool {
     Set<Artifact> listDependencies(PathElement path);
 
     Set<Artifact> downloadDependency(Gav absoluteGav);
+
+    Gav toGav(PathElement pathElement);
 }

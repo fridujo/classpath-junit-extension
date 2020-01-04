@@ -6,10 +6,12 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Model;
 
 import com.github.fridujo.classpath.junit.extension.Gav;
 import com.github.fridujo.classpath.junit.extension.PathElement;
@@ -20,7 +22,7 @@ class Maven extends MavenOperations implements BuildTool {
 
     final Path mavenHome;
     final Path localRepository;
-    private final Map<PathElement, Set<Artifact>> dependenciesCache = new LinkedHashMap<PathElement, Set<Artifact>>() {
+    private final Map<PathElement, DependencyDescriptor> dependenciesCache = new LinkedHashMap<PathElement, DependencyDescriptor>() {
         public boolean removeEldestEntry(Map.Entry eldest) {
             return size() > 1000;
         }
@@ -34,11 +36,20 @@ class Maven extends MavenOperations implements BuildTool {
     }
 
     public Set<Artifact> listDependencies(PathElement jarPath) {
-        return dependenciesCache.computeIfAbsent(jarPath, p -> loadMavenProject(p)
-            .map(mp -> mp.getDependencies().stream()
-                .filter(d -> !"test".equals(d.getScope()) && !d.isOptional())
-                .map(this::buildArtifact)
-                .collect(Collectors.toSet())).orElseGet(Collections::emptySet));
+        return getDependencyDescriptor(jarPath).dependencies;
+    }
+
+    private DependencyDescriptor getDependencyDescriptor(PathElement jarPath) {
+        return dependenciesCache.computeIfAbsent(jarPath, p -> {
+            Optional<Model> model = loadMavenProject(p);
+            Gav gav = model.map(m -> new Gav(m.getArtifactId(), m.getGroupId(), m.getVersion())).orElse(null);
+            Set<Artifact> artifacts = model
+                .map(mp -> mp.getDependencies().stream()
+                    .filter(d -> !"test".equals(d.getScope()) && !d.isOptional())
+                    .map(this::buildArtifact)
+                    .collect(Collectors.toSet())).orElseGet(Collections::emptySet);
+            return new DependencyDescriptor(gav, artifacts);
+        });
     }
 
     @Override
@@ -57,6 +68,11 @@ class Maven extends MavenOperations implements BuildTool {
         elements.add(new Artifact(gav, path));
         elements.addAll(listDependencies(path));
         return elements;
+    }
+
+    @Override
+    public Gav toGav(PathElement pathElement) {
+        return getDependencyDescriptor(pathElement).gav;
     }
 
     private Artifact buildArtifact(Dependency d) {

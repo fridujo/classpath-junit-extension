@@ -12,7 +12,7 @@ without the need to create complex configurations astride _build tool_ and code.
 
 For example, testing a library behavior without an optional dependency.
 
-## Sample
+## Testing optional dependency
 
 ```java
 @Test
@@ -25,6 +25,25 @@ void junit_extension_can_be_loaded() throws ClassNotFoundException {
 void junit_extension_cannot_be_loaded() {
     assertThatExceptionOfType(ClassNotFoundException.class)
         .isThrownBy(() -> Class.forName("org.junit.jupiter.api.extension.Extension"));
+}
+```
+
+## Testing retro-compatibility
+
+```java
+@CompatibilityTestWithClasspath(dependencies = {
+    "spring-rabbit:[1.7.7.RELEASE, 2.0.14.RELEASE, 2.2.4.RELEASE]"
+})
+void amqp_basic_get() {
+    String messageBody = "Hello world!";
+    try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(AmqpConfiguration.class)) {
+        rabbitTemplate.convertAndSend(EXCHANGE_NAME, "test.key1", messageBody);
+
+        Message message = rabbitTemplate.receive(QUEUE_NAME);
+
+        assertThat(message).isNotNull();
+        assertThat(message.getBody()).isEqualTo(messageBody.getBytes());
+    }
 }
 ```
 

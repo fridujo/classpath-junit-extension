@@ -21,7 +21,7 @@
         <maven-invoker.version>3.0.1</maven-invoker.version>
 
         <junit.jupiter.version>5.5.2</junit.jupiter.version>
-        <assertj.version>3.14.0</assertj.version>
+        <assertj.version>3.15.0</assertj.version>
         <mockito-core.version>3.2.4</mockito-core.version>
 
         <maven-javadoc-plugin.version>3.1.1</maven-javadoc-plugin.version>

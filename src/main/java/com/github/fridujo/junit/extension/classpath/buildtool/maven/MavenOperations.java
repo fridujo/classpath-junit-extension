@@ -29,16 +29,22 @@ import org.apache.maven.shared.invoker.InvocationResult;
 import org.apache.maven.shared.invoker.Invoker;
 import org.apache.maven.shared.invoker.MavenInvocationException;
 import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory;
+import org.eclipse.aether.impl.DefaultServiceLocator;
+import org.eclipse.aether.impl.RemoteRepositoryManager;
+import org.eclipse.aether.impl.RepositoryConnectorProvider;
 import org.eclipse.aether.internal.impl.DefaultArtifactResolver;
-import org.eclipse.aether.internal.impl.DefaultRemoteRepositoryManager;
-import org.eclipse.aether.internal.impl.DefaultRepositoryConnectorProvider;
 import org.eclipse.aether.internal.impl.DefaultRepositoryEventDispatcher;
 import org.eclipse.aether.internal.impl.DefaultRepositorySystem;
 import org.eclipse.aether.internal.impl.DefaultSyncContextFactory;
 import org.eclipse.aether.internal.impl.EnhancedLocalRepositoryManagerFactory;
 import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.NoLocalRepositoryManagerException;
+import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
+import org.eclipse.aether.spi.connector.transport.TransporterFactory;
+import org.eclipse.aether.transport.http.HttpTransporterFactory;
 
+import com.github.fridujo.junit.extension.classpath.Configuration;
 import com.github.fridujo.junit.extension.classpath.PathElement;
 
 abstract class MavenOperations {
@@ -50,22 +56,32 @@ abstract class MavenOperations {
         + "\\k<artifactId>-\\k<version>" + Pattern.quote(".jar"));
 
     private final DefaultRepositorySystemSession session = new DefaultRepositorySystemSession();
-    private final ProjectModelResolver modelResolver = new ProjectModelResolver(
-        session,
-        null,
-        new DefaultRepositorySystem()
-            .setVersionRangeResolver(new DefaultVersionRangeResolver())
-            .setArtifactResolver(new DefaultArtifactResolver()
-                .setSyncContextFactory(new DefaultSyncContextFactory())
-                .setRepositoryEventDispatcher(new DefaultRepositoryEventDispatcher())
-                .setVersionResolver(new DefaultVersionResolver())
-                .setRemoteRepositoryManager(new DefaultRemoteRepositoryManager())
-                .setRepositoryConnectorProvider(new DefaultRepositoryConnectorProvider())),
-        new DefaultRemoteRepositoryManager(),
-        Collections.emptyList(),
-        ProjectBuildingRequest.RepositoryMerging.POM_DOMINANT,
-        null
-    );
+    private final ProjectModelResolver modelResolver;
+
+    {
+        DefaultServiceLocator serviceLocator = new DefaultServiceLocator();
+        serviceLocator.setService(RepositoryConnectorFactory.class, BasicRepositoryConnectorFactory.class);
+        serviceLocator.setService(TransporterFactory.class, HttpTransporterFactory.class);
+
+        RemoteRepositoryManager remoteRepositoryManager = serviceLocator.getService(RemoteRepositoryManager.class);
+        RepositoryConnectorProvider repositoryConnectorProvider = serviceLocator.getService(RepositoryConnectorProvider.class);
+        modelResolver = new ProjectModelResolver(
+            session,
+            null,
+            new DefaultRepositorySystem()
+                .setVersionRangeResolver(new DefaultVersionRangeResolver())
+                .setArtifactResolver(new DefaultArtifactResolver()
+                    .setSyncContextFactory(new DefaultSyncContextFactory())
+                    .setRepositoryEventDispatcher(new DefaultRepositoryEventDispatcher())
+                    .setVersionResolver(new DefaultVersionResolver())
+                    .setRemoteRepositoryManager(remoteRepositoryManager)
+                    .setRepositoryConnectorProvider(repositoryConnectorProvider)),
+            remoteRepositoryManager,
+            Collections.emptyList(),
+            ProjectBuildingRequest.RepositoryMerging.POM_DOMINANT,
+            null
+        );
+    }
 
     protected MavenOperations(String localRepo) {
         try {
@@ -97,33 +113,48 @@ abstract class MavenOperations {
     protected Optional<Model> loadMavenProject(PathElement jarPath) {
         Matcher matcher = MAVEN_ARTIFACT_PATH_PATTERN.matcher(jarPath.toPath().toString());
         if (!matcher.matches()) {
+            log("Not a Maven artifact jarPath: " + jarPath);
             return Optional.empty();
         }
         Optional<Path> pomPath = getPomPath(jarPath);
-        if (!pomPath.isPresent()) return Optional.empty();
+        if (!pomPath.isPresent()) {
+            log("No POM file matching jarPath: " + jarPath);
+            return Optional.empty();
+        }
         try {
             ModelBuildingRequest request = new DefaultModelBuildingRequest()
                 .setPomFile(pomPath.get().toFile())
                 .setModelResolver(modelResolver);
             DefaultModelBuilder defaultModelBuilder = new DefaultModelBuilderFactory().newInstance();
+            defaultModelBuilder.setProfileSelector((profiles, context, problems) -> Collections.emptyList());
             ModelBuildingResult result = defaultModelBuilder.build(request);
 
             return Optional.of(result.getEffectiveModel());
         } catch (ModelBuildingException e) {
+            log("Failed to read POM model from: " + pomPath.get() + ": " + e.getMessage().replaceAll("\r?\n", " "));
             return Optional.empty();
+        }
+    }
+
+    private void log(String message) {
+        if (Configuration.INSTANCE.verbose) {
+            System.out.println(message);
         }
     }
 
     protected Result executeGoal(String... cmdLine) {
         InvocationRequest request = new DefaultInvocationRequest();
         request.setGoals(Arrays.asList(cmdLine));
+        request.setBatchMode(true);
         Path pomPath = Paths.get("").toAbsolutePath().resolve("pom.xml");
         if (Files.exists(pomPath)) {
             // Useful to lookup for declared remote repositories (other than central)
             request.setPomFile(pomPath.toFile());
         }
-
         Invoker invoker = new DefaultInvoker();
+        PrefixedPrintStreamHandler outputHandler = new PrefixedPrintStreamHandler("    <internal> ");
+        invoker.setOutputHandler(outputHandler);
+        invoker.setErrorHandler(outputHandler);
 
         try {
             InvocationResult result = invoker.execute(request);

@@ -67,4 +67,13 @@ class Maven extends MavenOperations implements BuildTool {
     private PathElement toPath(Gav absoluteGav) {
         return PathElement.create(localRepository.toString() + File.separatorChar + absoluteGav.toRelativePath());
     }
+
+    @Override
+    public String toString() {
+        return "Maven{" +
+            "mavenHome=" + mavenHome +
+            ", localRepository=" + localRepository +
+            ", dependenciesCache=" + dependenciesCache +
+            '}';
+    }
 }

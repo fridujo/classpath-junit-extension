@@ -18,7 +18,7 @@ public class ModifiedClasspathExtension implements InvocationInterceptor {
     public void interceptTestMethod(Invocation<Void> invocation,
                                     ReflectiveInvocationContext<Method> invocationContext,
                                     ExtensionContext extensionContext) {
-        silentlyInvokeOriginalMethod(invocation);
+        invocation.skip();
 
         ExtensionContext.Store store = extensionContext.getRoot().getStore(namespace);
         BuildTool buildTool = store.get(BuildTool.class, BuildTool.class);
@@ -63,17 +63,5 @@ public class ModifiedClasspathExtension implements InvocationInterceptor {
         ReflectionUtils.invokeMethod(
             method.orElseThrow(() -> new IllegalStateException("No test method named " + methodName)),
             testInstance);
-    }
-
-    /**
-     * This is needed with this implementation.
-     * As mentioned in {@link InvocationInterceptor} documentation, given invocation must be called exactly once.
-     * However we are not interested in the outcome of this invocation, it is only a side-effect to get the whole shebang working.
-     */
-    private void silentlyInvokeOriginalMethod(Invocation<Void> invocation) {
-        try {
-            invocation.proceed();
-        } catch (Throwable ignored) {
-        }
     }
 }

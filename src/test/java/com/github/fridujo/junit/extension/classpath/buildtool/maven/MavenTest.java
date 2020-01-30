@@ -2,6 +2,7 @@ package com.github.fridujo.junit.extension.classpath.buildtool.maven;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
 import java.io.IOException;
@@ -43,15 +44,18 @@ class MavenTest {
 
         Set<Gav> deps = maven.listDependencies(pathElement).stream().map(a -> a.gav).collect(Collectors.toSet());
 
-        assertThat(deps).containsOnly(
-            Gav.parse("org.junit.platform:junit-platform-commons:1.5.2"),
-            Gav.parse("org.opentest4j:opentest4j:1.2.0"),
-            Gav.parse("org.apiguardian:apiguardian-api:1.1.0")
-        );
+        assertThat(deps)
+            .as("Dependencies of" + (Files.exists(pathElement.toPath()) ? "" : " not") + " existing " + pathElement)
+            .extracting(Gav::getGroupId, Gav::getArtifactId)
+            .containsOnly(
+                tuple("org.junit.platform", "junit-platform-commons"),
+                tuple("org.opentest4j", "opentest4j"),
+                tuple("org.apiguardian", "apiguardian-api")
+            );
     }
 
     @Test
-    @Order(1)
+    @Order(2)
     void downloadDependency_resolves() {
         BuildTool maven = getMaven();
 
@@ -67,7 +71,7 @@ class MavenTest {
     }
 
     @Test
-    @Order(2)
+    @Order(3)
     void downloadDependency_caches() {
         BuildTool maven = getMaven();
 
@@ -78,6 +82,7 @@ class MavenTest {
     }
 
     @Test
+    @Order(1)
     void downloadDependency_fails_when_not_existing() {
         BuildTool maven = getMaven();
 

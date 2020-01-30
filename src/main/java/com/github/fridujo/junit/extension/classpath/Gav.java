@@ -20,6 +20,14 @@ public class Gav {
         this.jarPattern = buildJarPattern(artifactId, groupId, version);
     }
 
+    public String getArtifactId() {
+        return artifactId;
+    }
+
+    public String getGroupId() {
+        return groupId;
+    }
+
     private static Pattern buildJarPattern(String artifactId, String groupId, String version) {
         if (groupId == null) {
             return Pattern.compile("(.*)" + Pattern.quote(artifactId) + "([^\\" + File.separatorChar + "]*)" + Pattern.quote(".jar"));
@@ -51,6 +59,15 @@ public class Gav {
         return new Gav(matcher.group("artifactId"), matcher.group("groupId"), matcher.group("version"));
     }
 
+    public boolean matchesJar(String rawJarPath) {
+        return jarPattern.matcher(rawJarPath).matches();
+    }
+
+    public String toRelativePath() {
+        return groupId.replace('.', File.separatorChar) + File.separatorChar + artifactId + File.separatorChar + version + File.separatorChar
+            + artifactId + '-' + version + ".jar";
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -62,15 +79,6 @@ public class Gav {
             sb.append(':').append(version);
         }
         return sb.toString();
-    }
-
-    public boolean matchesJar(String rawJarPath) {
-        return jarPattern.matcher(rawJarPath).matches();
-    }
-
-    public String toRelativePath() {
-        return groupId.replace('.', File.separatorChar) + File.separatorChar + artifactId + File.separatorChar + version + File.separatorChar
-            + artifactId + '-' + version + ".jar";
     }
 
     @Override

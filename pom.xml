@@ -19,7 +19,7 @@
 
         <maven-core.version>3.8.1</maven-core.version>
         <maven-invoker.version>3.1.0</maven-invoker.version>
-        <maven-resolver.version>1.6.2</maven-resolver.version>
+        <maven-resolver.version>1.7.0</maven-resolver.version>
 
         <junit.jupiter.version>5.7.1</junit.jupiter.version>
         <assertj.version>3.19.0</assertj.version>

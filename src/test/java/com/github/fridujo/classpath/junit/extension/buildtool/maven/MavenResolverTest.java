@@ -1,27 +1,30 @@
 package com.github.fridujo.classpath.junit.extension.buildtool.maven;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import com.github.fridujo.classpath.junit.extension.utils.Reflections;
+import com.github.fridujo.classpath.junit.extension.utils.SystemVariables;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-import com.github.fridujo.classpath.junit.extension.utils.Reflections;
-import com.github.fridujo.classpath.junit.extension.utils.SystemVariables;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 class MavenResolverTest {
 
     @Test
     void gather_maven_home_from_sys_props() {
-        assertThat(new SystemVariables().get(MavenResolver.M2_HOME)).as(MavenResolver.M2_HOME + " system property must be set on the build system (not required for users)").isNotBlank();
-
         Optional<Path> mavenHome = new MavenResolver().getMavenHome();
 
+        assertThat(
+            Optional.ofNullable(new SystemVariables().get(MavenResolver.M2_HOME))
+                .orElseGet(() -> new SystemVariables().get(MavenResolver.MAVEN_HOME))
+        )
+            .as(MavenResolver.M2_HOME + " or " + MavenResolver.MAVEN_HOME + " system property must be set on the build system (not required for users)")
+            .isNotBlank();
         assertThat(mavenHome).isPresent();
         assertThat(mavenHome.get()).isDirectoryContaining(p -> Files.isDirectory(p) && p.getFileName().toString().equals("bin"));
     }

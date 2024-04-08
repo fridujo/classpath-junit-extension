@@ -1,6 +1,10 @@
 package com.github.fridujo.classpath.junit.extension.buildtool.maven;
 
-import static java.util.Optional.empty;
+import com.github.fridujo.classpath.junit.extension.PathElement;
+import com.github.fridujo.classpath.junit.extension.buildtool.BuildTool;
+import com.github.fridujo.classpath.junit.extension.buildtool.BuildToolResolver;
+import com.github.fridujo.classpath.junit.extension.utils.Processes;
+import com.github.fridujo.classpath.junit.extension.utils.SystemVariables;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,14 +14,11 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.github.fridujo.classpath.junit.extension.PathElement;
-import com.github.fridujo.classpath.junit.extension.buildtool.BuildTool;
-import com.github.fridujo.classpath.junit.extension.buildtool.BuildToolResolver;
-import com.github.fridujo.classpath.junit.extension.utils.Processes;
-import com.github.fridujo.classpath.junit.extension.utils.SystemVariables;
+import static java.util.Optional.empty;
 
 public class MavenResolver implements BuildToolResolver {
     static final String M2_HOME = "M2_HOME";
+    static final String MAVEN_HOME = "MAVEN_HOME";
     static final String USER_HOME = "user.home";
 
     private static final Pattern MAVEN_HOME_LINE_PATTERN = Pattern.compile("^" + Pattern.quote("Maven home: ") + "(?<home>.+)$", Pattern.MULTILINE);
@@ -25,9 +26,16 @@ public class MavenResolver implements BuildToolResolver {
 
     private final SystemVariables systemVariables = new SystemVariables();
 
+    private void declareMavenHomeIfNeeded(Optional<Path> mavenHome) {
+        if (mavenHome.isPresent() && System.getProperty("maven.home") == null) {
+            System.setProperty("maven.home", mavenHome.get().toString());
+        }
+    }
+
     @Override
     public Optional<BuildTool> resolve(Set<PathElement> classpath) {
         Optional<Path> mavenHome = getMavenHome();
+        declareMavenHomeIfNeeded(mavenHome);
         Optional<Path> localRepository = getLocalRepository();
 
         if (mavenHome.isPresent() && localRepository.isPresent()) {
@@ -39,6 +47,7 @@ public class MavenResolver implements BuildToolResolver {
 
     Optional<Path> getMavenHome() {
         Optional<Path> mavenHomeFromSysProps = Optional.ofNullable(systemVariables.get(M2_HOME))
+            .or(() -> Optional.ofNullable(systemVariables.get(MAVEN_HOME)))
             .map(Paths::get)
             .filter(Files::exists)
             .filter(Files::isDirectory);

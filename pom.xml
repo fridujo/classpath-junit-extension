@@ -24,7 +24,7 @@
         <junit.jupiter.version>5.10.2</junit.jupiter.version>
         <assertj.version>3.25.3</assertj.version>
         <mockito-core.version>5.11.0</mockito-core.version>
-        <log4j.version>2.14.1</log4j.version>
+        <log4j.version>2.23.1</log4j.version>
 
         <maven-javadoc-plugin.version>3.6.3</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>

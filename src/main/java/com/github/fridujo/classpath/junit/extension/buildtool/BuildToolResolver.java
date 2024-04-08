@@ -1,9 +1,9 @@
 package com.github.fridujo.classpath.junit.extension.buildtool;
 
+import com.github.fridujo.classpath.junit.extension.PathElement;
+
 import java.util.Optional;
 import java.util.Set;
-
-import com.github.fridujo.classpath.junit.extension.PathElement;
 
 public interface BuildToolResolver {
 

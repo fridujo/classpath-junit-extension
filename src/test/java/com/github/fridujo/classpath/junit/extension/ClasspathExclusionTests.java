@@ -1,11 +1,10 @@
 package com.github.fridujo.classpath.junit.extension;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-
+import com.github.fridujo.classpath.junit.extension.jupiter.ModifiedClasspath;
 import org.junit.jupiter.api.Test;
 
-import com.github.fridujo.classpath.junit.extension.jupiter.ModifiedClasspath;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 class ClasspathExclusionTests {
 
@@ -35,7 +34,7 @@ class ClasspathExclusionTests {
     }
 
     @Test
-    @ModifiedClasspath(excludeJars = "guava:guava")
+    @ModifiedClasspath(excludeJars = "com.google.guava:guava")
     void exclusion_of_one_jar() throws ClassNotFoundException {
         assertThatExceptionOfType(ClassNotFoundException.class)
             .isThrownBy(() -> Class.forName("com.google.common.collect.Maps"));
@@ -44,7 +43,7 @@ class ClasspathExclusionTests {
     }
 
     @Test
-    @ModifiedClasspath(excludeJars = "guava:guava")
+    @ModifiedClasspath(excludeJars = "com.google.guava:guava")
     void current_thread_classLoader_is_also_replaced() {
         assertThatExceptionOfType(ClassNotFoundException.class)
             .isThrownBy(() -> Thread.currentThread().getContextClassLoader().loadClass("com.google.common.collect.Maps"));

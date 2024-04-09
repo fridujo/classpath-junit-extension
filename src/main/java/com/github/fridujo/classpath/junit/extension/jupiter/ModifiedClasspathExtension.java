@@ -1,12 +1,11 @@
 package com.github.fridujo.classpath.junit.extension.jupiter;
 
-import java.lang.reflect.Method;
-
+import com.github.fridujo.classpath.junit.extension.Classpath;
+import com.github.fridujo.classpath.junit.extension.buildtool.BuildTool;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ReflectiveInvocationContext;
 
-import com.github.fridujo.classpath.junit.extension.Classpath;
-import com.github.fridujo.classpath.junit.extension.buildtool.BuildTool;
+import java.lang.reflect.Method;
 
 class ModifiedClasspathExtension extends AbstractClasspathExtension {
 

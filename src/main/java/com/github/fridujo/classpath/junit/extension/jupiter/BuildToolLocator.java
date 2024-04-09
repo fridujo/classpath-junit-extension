@@ -1,8 +1,7 @@
 package com.github.fridujo.classpath.junit.extension.jupiter;
 
-import org.junit.jupiter.api.extension.ExtensionContext;
-
 import com.github.fridujo.classpath.junit.extension.buildtool.BuildTool;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
 class BuildToolLocator {
     private static final ExtensionContext.Namespace namespace = ExtensionContext.Namespace.create(BuildToolLocator.class);

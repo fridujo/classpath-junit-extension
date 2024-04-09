@@ -1,7 +1,12 @@
 package com.github.fridujo.classpath.junit.extension.jupiter;
 
-import static java.util.Collections.emptyList;
-import static java.util.stream.Collectors.toList;
+import com.github.fridujo.classpath.junit.extension.Classpath;
+import com.github.fridujo.classpath.junit.extension.GavReplacement;
+import com.github.fridujo.classpath.junit.extension.buildtool.BuildTool;
+import com.github.fridujo.classpath.junit.extension.utils.Streams;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.TestTemplateInvocationContext;
+import org.junit.jupiter.api.extension.TestTemplateInvocationContextProvider;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,14 +14,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.TestTemplateInvocationContext;
-import org.junit.jupiter.api.extension.TestTemplateInvocationContextProvider;
-
-import com.github.fridujo.classpath.junit.extension.Classpath;
-import com.github.fridujo.classpath.junit.extension.GavReplacement;
-import com.github.fridujo.classpath.junit.extension.buildtool.BuildTool;
-import com.github.fridujo.classpath.junit.extension.utils.Streams;
+import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
 
 class CompatibleWithDependenciesExtension implements TestTemplateInvocationContextProvider {
     @Override

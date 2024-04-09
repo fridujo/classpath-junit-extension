@@ -1,21 +1,17 @@
 package com.github.fridujo.classpath.junit.extension;
 
-import static java.util.Arrays.stream;
-
-import java.io.File;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
-
 import com.github.fridujo.classpath.junit.extension.buildtool.Artifact;
 import com.github.fridujo.classpath.junit.extension.buildtool.BuildTool;
 import com.github.fridujo.classpath.junit.extension.buildtool.BuildToolFactory;
 import com.github.fridujo.classpath.junit.extension.utils.Streams;
+
+import java.io.File;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.util.Arrays.stream;
 
 public class Classpath {
 
@@ -83,7 +79,7 @@ public class Classpath {
 
         Set<PathElement> newPaths = new TreeSet<>(pathElements);
         Set<Artifact> artifactsToAdd = buildTool.downloadDependency(gav);
-        newPaths.addAll(artifactsToAdd.stream().map(a -> a.path).collect(Collectors.toSet()));
+        newPaths.addAll(artifactsToAdd.stream().map(Artifact::path).collect(Collectors.toSet()));
 
         return new Classpath(newPaths, buildTool);
     }
@@ -97,13 +93,13 @@ public class Classpath {
         if (!artifactsToRemove.isEmpty()) {
             Set<Artifact> gavsToKeep = new HashSet<>();
             for (PathElement pe : pathElements) {
-                if (!pe.matches(gav) && artifactsToRemove.stream().noneMatch(a -> pe.matches(a.gav))) {
+                if (!pe.matches(gav) && artifactsToRemove.stream().noneMatch(a -> pe.matches(a.gav()))) {
                     gavsToKeep.addAll(buildTool.listDependencies(pe));
                 }
             }
 
             artifactsToRemove.removeAll(gavsToKeep);
-            Set<Gav> gavsToRemove = artifactsToRemove.stream().map(a -> a.gav).collect(Collectors.toSet());
+            Set<Gav> gavsToRemove = artifactsToRemove.stream().map(Artifact::gav).collect(Collectors.toSet());
             newPaths.removeIf(pe -> pe.matches(gavsToRemove));
         }
         return new Classpath(newPaths, buildTool);

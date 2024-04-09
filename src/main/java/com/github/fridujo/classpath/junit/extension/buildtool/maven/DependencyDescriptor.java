@@ -1,9 +1,9 @@
 package com.github.fridujo.classpath.junit.extension.buildtool.maven;
 
-import java.util.Set;
-
 import com.github.fridujo.classpath.junit.extension.Gav;
 import com.github.fridujo.classpath.junit.extension.buildtool.Artifact;
+
+import java.util.Set;
 
 class DependencyDescriptor {
 

@@ -20,14 +20,6 @@ public class Gav {
         this.jarPattern = buildJarPattern(artifactId, groupId, version);
     }
 
-    public String getArtifactId() {
-        return artifactId;
-    }
-
-    public String getGroupId() {
-        return groupId;
-    }
-
     private static Pattern buildJarPattern(String artifactId, String groupId, String version) {
         if (artifactId == null) {
             return null;
@@ -62,8 +54,16 @@ public class Gav {
         return new Gav(matcher.group("artifactId"), matcher.group("groupId"), matcher.group("version"));
     }
 
+    public String getArtifactId() {
+        return artifactId;
+    }
+
+    public String getGroupId() {
+        return groupId;
+    }
+
     public boolean matchesJar(String rawJarPath) {
-        return jarPattern != null ? jarPattern.matcher(rawJarPath).matches() : false;
+        return jarPattern != null && jarPattern.matcher(rawJarPath).matches();
     }
 
     public String toRelativePath() {

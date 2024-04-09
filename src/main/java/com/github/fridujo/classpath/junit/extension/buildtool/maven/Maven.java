@@ -1,87 +1,148 @@
 package com.github.fridujo.classpath.junit.extension.buildtool.maven;
 
-import java.io.File;
-import java.nio.file.Path;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.apache.maven.model.Dependency;
-import org.apache.maven.model.Model;
-
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.github.fridujo.classpath.junit.extension.Gav;
 import com.github.fridujo.classpath.junit.extension.PathElement;
 import com.github.fridujo.classpath.junit.extension.buildtool.Artifact;
 import com.github.fridujo.classpath.junit.extension.buildtool.BuildTool;
+import com.github.fridujo.classpath.junit.extension.buildtool.RuntimeDependencyResolutionException;
+import com.github.fridujo.classpath.junit.extension.utils.PathUtils;
+import eu.maveniverse.maven.mima.context.Context;
+import eu.maveniverse.maven.mima.context.ContextOverrides;
+import eu.maveniverse.maven.mima.context.Runtime;
+import eu.maveniverse.maven.mima.context.Runtimes;
+import org.eclipse.aether.DefaultRepositorySystemSession;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.collection.CollectRequest;
+import org.eclipse.aether.collection.DependencySelector;
+import org.eclipse.aether.graph.Dependency;
+import org.eclipse.aether.graph.DependencyNode;
+import org.eclipse.aether.resolution.DependencyRequest;
+import org.eclipse.aether.resolution.DependencyResolutionException;
+import org.eclipse.aether.util.graph.selector.AndDependencySelector;
+import org.eclipse.aether.util.graph.selector.ExclusionDependencySelector;
+import org.eclipse.aether.util.graph.selector.OptionalDependencySelector;
+import org.eclipse.aether.util.graph.selector.ScopeDependencySelector;
+import org.eclipse.aether.util.graph.visitor.PreorderNodeListGenerator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-class Maven extends MavenOperations implements BuildTool {
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static java.util.Collections.emptySet;
+
+class Maven implements BuildTool {
 
     final Path mavenHome;
     final Path localRepository;
-    private final Map<PathElement, DependencyDescriptor> dependenciesCache = new LinkedHashMap<PathElement, DependencyDescriptor>() {
-        public boolean removeEldestEntry(Map.Entry eldest) {
-            return size() > 1000;
+    private final Logger logger = LoggerFactory.getLogger(Maven.class);
+    private final Runtime runtime = Runtimes.INSTANCE.getRuntime();
+    private final ContextOverrides overrides = ContextOverrides.create().withUserSettings(true).build();
+    private final DependencySelector dependencySelector = new AndDependencySelector(
+        new ScopeDependencySelector("test"),
+        new OptionalDependencySelector(),
+        new ExclusionDependencySelector()
+    );
+
+    public Maven() {
+        try (Context context = runtime.create(overrides)) {
+            mavenHome = context.mavenSystemHome().basedir();
+            localRepository = context.repositorySystemSession().getLocalRepository().getBasedir().toPath();
         }
-    };
-
-    Maven(Path mavenHome, Path localRepository) {
-        super(localRepository.toString());
-
-        this.mavenHome = mavenHome;
-        this.localRepository = localRepository;
     }
 
+    private static Optional<Path> getPomPath(PathElement jarPath) {
+        String rawPath = jarPath.toPath().toString();
+        if (!rawPath.endsWith(".jar")) {
+            return Optional.empty();
+        }
+        Path pomPath = Paths.get(rawPath.substring(0, rawPath.length() - 4) + ".pom");
+        if (!Files.exists(pomPath)) {
+            return Optional.empty();
+        }
+        return Optional.of(pomPath);
+    }
+
+    @Override
     public Set<Artifact> listDependencies(PathElement jarPath) {
-        return getDependencyDescriptor(jarPath).dependencies;
-    }
-
-    private DependencyDescriptor getDependencyDescriptor(PathElement jarPath) {
-        return dependenciesCache.computeIfAbsent(jarPath, p -> {
-            Optional<Model> model = loadMavenProject(p);
-            Gav gav = model.map(m -> new Gav(m.getArtifactId(), m.getGroupId(), m.getVersion())).orElse(null);
-            Set<Artifact> artifacts = model
-                .map(mp -> mp.getDependencies().stream()
-                    .filter(d -> !"test".equals(d.getScope()) && !d.isOptional())
-                    .map(this::buildArtifact)
-                    .collect(Collectors.toSet())).orElseGet(Collections::emptySet);
-            return new DependencyDescriptor(gav, artifacts);
-        });
+        Gav gav = toGav(jarPath);
+        if (gav == null) {
+            return emptySet();
+        }
+        return downloadDependency(gav);
     }
 
     @Override
     public Set<Artifact> downloadDependency(Gav gav) {
-        PathElement path = toPath(gav);
-        if (!path.exists()) {
-            Result result = executeGoal("dependency:get",
-                "-DgroupId=" + gav.groupId,
-                "-DartifactId=" + gav.artifactId,
-                "-Dversion=" + gav.version);
-
-            result.throwsOnError(() -> new IllegalStateException("Failed to download dependency " + gav));
-        }
-
-        Set<Artifact> elements = new LinkedHashSet<>();
-        elements.add(new Artifact(gav, path));
-        elements.addAll(listDependencies(path));
-        return elements;
+        DefaultArtifact artifact = new DefaultArtifact(gav.groupId + ":" + gav.artifactId + ":" + gav.version);
+        return resolveDependencies(artifact);
     }
 
     @Override
-    public Gav toGav(PathElement pathElement) {
-        return getDependencyDescriptor(pathElement).gav;
+    public Gav toGav(PathElement jarPath) {
+        Optional<Path> pomPath = getPomPath(jarPath);
+        if (pomPath.isEmpty()) {
+            return null;
+        }
+        ObjectMapper xmlMapper = new XmlMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        try {
+            SimplePom simplePom = xmlMapper.readValue(pomPath.get().toFile(), SimplePom.class);
+            return simplePom.toGav();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
-    private Artifact buildArtifact(Dependency d) {
-        Gav gav = new Gav(d.getArtifactId(), d.getGroupId(), d.getVersion());
-        return new Artifact(gav, PathElement.create(localRepository.toString() + File.separatorChar + gav.toRelativePath()));
+    @Override
+    public Path deleteLocalDependency(Gav gav) {
+        Path localPath = localRepository;
+        for (String groupIdFragment : gav.groupId.split("\\.")) {
+            localPath = localPath.resolve(groupIdFragment);
+        }
+        localPath = localPath.resolve(gav.artifactId);
+        if (gav.version != null) {
+            localPath = localPath.resolve(gav.version);
+        }
+        PathUtils.delete(localPath);
+        return localPath;
     }
 
-    private PathElement toPath(Gav absoluteGav) {
-        return PathElement.create(localRepository.toString() + File.separatorChar + absoluteGav.toRelativePath());
+    private Set<Artifact> resolveDependencies(org.eclipse.aether.artifact.Artifact artifact) {
+        try (Context context = runtime.create(overrides)) {
+            Dependency dependency = new Dependency(artifact, "runtime");
+            CollectRequest collectRequest = new CollectRequest();
+            collectRequest.setRoot(dependency);
+            collectRequest.setRepositories(context.remoteRepositories());
+            DependencyRequest dependencyRequest = new DependencyRequest();
+            dependencyRequest.setCollectRequest(collectRequest);
+
+            ((DefaultRepositorySystemSession) context.repositorySystemSession()).setDependencySelector(dependencySelector);
+
+            DependencyNode rootNode = context.repositorySystem()
+                .resolveDependencies(context.repositorySystemSession(), dependencyRequest)
+                .getRoot();
+            PreorderNodeListGenerator nlg = new PreorderNodeListGenerator();
+            rootNode.accept(nlg);
+            return nlg.getDependencies(false).stream()
+                .map(d -> new Artifact(
+                    new Gav(
+                        d.getArtifact().getArtifactId(),
+                        d.getArtifact().getGroupId(),
+                        d.getArtifact().getVersion()),
+                    PathElement.create(d.getArtifact().getFile().getAbsolutePath())))
+                .collect(Collectors.toSet());
+        } catch (DependencyResolutionException e) {
+            throw new RuntimeDependencyResolutionException(e);
+        }
     }
 
     @Override
@@ -89,7 +150,6 @@ class Maven extends MavenOperations implements BuildTool {
         return "Maven{" +
             "mavenHome=" + mavenHome +
             ", localRepository=" + localRepository +
-            ", dependenciesCache=" + dependenciesCache +
             '}';
     }
 }

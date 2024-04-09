@@ -1,18 +1,17 @@
 package com.github.fridujo.classpath.junit.extension.jupiter;
 
-import java.io.File;
-import java.lang.reflect.Method;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
+import com.github.fridujo.classpath.junit.extension.Classpath;
+import com.github.fridujo.classpath.junit.extension.PathElement;
+import com.github.fridujo.classpath.junit.extension.buildtool.BuildTool;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.InvocationInterceptor;
 import org.junit.jupiter.api.extension.ReflectiveInvocationContext;
 import org.junit.platform.commons.util.ReflectionUtils;
 
-import com.github.fridujo.classpath.junit.extension.Classpath;
-import com.github.fridujo.classpath.junit.extension.PathElement;
-import com.github.fridujo.classpath.junit.extension.buildtool.BuildTool;
+import java.io.File;
+import java.lang.reflect.Method;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 abstract class AbstractClasspathExtension implements InvocationInterceptor {
 

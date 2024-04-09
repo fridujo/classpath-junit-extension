@@ -1,11 +1,10 @@
 package com.github.fridujo.classpath.junit.extension.buildtool;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.jupiter.api.Test;
-
 import com.github.fridujo.classpath.junit.extension.Gav;
 import com.github.fridujo.classpath.junit.extension.PathElement;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class ArtifactTest {
 
@@ -15,7 +14,7 @@ class ArtifactTest {
         PathElement path = PathElement.create("/path/to/lib");
         Artifact artifact = new Artifact(gav, path);
 
-        assertThat(artifact).hasToString(gav + " (" + path + ")");
+        assertThat(artifact).hasToString("Artifact[gav=" + gav + ", path=" + path + "]");
     }
 
     @Test

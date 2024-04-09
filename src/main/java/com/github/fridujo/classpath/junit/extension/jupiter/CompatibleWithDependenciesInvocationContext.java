@@ -1,14 +1,13 @@
 package com.github.fridujo.classpath.junit.extension.jupiter;
 
-import static java.util.Collections.singletonList;
+import com.github.fridujo.classpath.junit.extension.GavReplacement;
+import org.junit.jupiter.api.extension.Extension;
+import org.junit.jupiter.api.extension.TestTemplateInvocationContext;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.jupiter.api.extension.Extension;
-import org.junit.jupiter.api.extension.TestTemplateInvocationContext;
-
-import com.github.fridujo.classpath.junit.extension.GavReplacement;
+import static java.util.Collections.singletonList;
 
 class CompatibleWithDependenciesInvocationContext implements TestTemplateInvocationContext {
 

@@ -1,13 +1,13 @@
 package com.github.fridujo.classpath.junit.extension.buildtool;
 
-import static java.util.Optional.empty;
+import com.github.fridujo.classpath.junit.extension.PathElement;
+import com.github.fridujo.classpath.junit.extension.utils.Streams;
 
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 
-import com.github.fridujo.classpath.junit.extension.PathElement;
-import com.github.fridujo.classpath.junit.extension.utils.Streams;
+import static java.util.Optional.empty;
 
 public class BuildToolFactory {
 

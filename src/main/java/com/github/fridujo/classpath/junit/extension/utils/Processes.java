@@ -1,10 +1,10 @@
 package com.github.fridujo.classpath.junit.extension.utils;
 
+import org.junit.jupiter.api.condition.OS;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
-
-import org.junit.jupiter.api.condition.OS;
 
 public class Processes {
 
@@ -23,7 +23,7 @@ public class Processes {
             if (exitCode != 0) {
                 return ProcessResult.error(exitCode);
             }
-            String output = new Scanner(process.getInputStream(), StandardCharsets.UTF_8.name()).useDelimiter("\\A").next();
+            String output = new Scanner(process.getInputStream(), StandardCharsets.UTF_8).useDelimiter("\\A").next();
             return ProcessResult.success(output);
         } catch (IOException | InterruptedException e) {
             return ProcessResult.error(e);

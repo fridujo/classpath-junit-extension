@@ -13,10 +13,9 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-          cache: maven
+          cache: gradle
 
       - name: 🏗️ Build & test
         run: |
-          mvn -version
-          export MAVEN_HOME="$(whereis mvn)"
-          mvn clean verify -Dorg.slf4j.simpleLogger.showDateTime=true "-Dorg.slf4j.simpleLogger.dateTimeFormat=yyyy-MM-dd HH:mm:ss"
+          ./gradlew --version --no-daemon
+          ./gradlew clean publishToMavenLocal -i --no-daemon --warning-mode all

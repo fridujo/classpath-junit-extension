@@ -24,7 +24,7 @@ class ClasspathExclusionTests {
     }
 
     @Test
-    @ModifiedClasspath(excludeDependencies = "guava:guava")
+    @ModifiedClasspath(excludeDependencies = "com.google.guava:guava")
     void exclusion_of_one_gav_and_its_dependencies() {
         assertThatExceptionOfType(ClassNotFoundException.class)
             .isThrownBy(() -> Class.forName("com.google.common.collect.Maps"));

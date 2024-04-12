@@ -1,4 +1,5 @@
 # Classpath modification extension for JUnit5
+
 [![Build Status](https://travis-ci.com/fridujo/classpath-junit-extension.svg?branch=master)](https://travis-ci.com/fridujo/classpath-junit-extension)
 [![Coverage Status](https://codecov.io/gh/fridujo/classpath-junit-extension/branch/master/graph/badge.svg)](https://codecov.io/gh/fridujo/classpath-junit-extension/)
 [![Maven Central](https://img.shields.io/maven-central/v/com.github.fridujo/classpath-junit-extension.svg)](https://search.maven.org/#search|ga|1|a:"classpath-junit-extension")
@@ -48,21 +49,28 @@ void amqp_basic_get() {
 ```
 
 ## Alternatives
-Use the `maven-invoker-plugin` with **pom.xml** template (see an example [here](https://github.com/fridujo/rabbitmq-mock/blob/78cd20380ea46089193dfbf5e29efd55798343ee/pom.xml#L163)).
+
+Use the `maven-invoker-plugin` with **pom.xml** template (see an
+example [here](https://github.com/fridujo/rabbitmq-mock/blob/78cd20380ea46089193dfbf5e29efd55798343ee/pom.xml#L163)).
 
 ## Roadmap
-Currently this extension uses a _workaround_ to get things done, but it is waiting for [JUnit5 #201](https://github.com/junit-team/junit5/issues/201) to get a cleaner approach at this.
+
+Currently this extension uses a _workaround_ to get things done, but it is waiting
+for [JUnit5 #201](https://github.com/junit-team/junit5/issues/201) to get a cleaner approach at this.
 
 Next things to do:
+
 * Replace dependencies by other ones (different versions or implementations)
 * Support other **Build Tools** (Gradle, SBT, Ivy, etc.)
 * Make the annotation
-  * available at class level
-  * work in `@Nested` tests
-  * work in conjunction with **injection** / **test-templates** (may require **the classloader extension**)
-  * repeatable, so that the same test can be expected to work against various classpath (different version of a library per se)
+    * available at class level
+    * work in `@Nested` tests
+    * work in conjunction with **injection** / **test-templates** (may require **the classloader extension**)
+    * repeatable, so that the same test can be expected to work against various classpath (different version of a
+      library per se)
 
 ## Contribute
+
 Any contribution is greatly appreciated.
 
 [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#github.com/fridujo/classpath-junit-extension.git)
@@ -70,7 +78,9 @@ Any contribution is greatly appreciated.
 ## Getting Started
 
 ### Maven
+
 Add the following dependency to your **pom.xml**
+
 ```xml
 <dependency>
     <groupId>com.github.fridujo</groupId>
@@ -81,7 +91,9 @@ Add the following dependency to your **pom.xml**
 ```
 
 ### Gradle
+
 Add the following dependency to your **build.gradle**
+
 ```groovy
 repositories {
 	mavenCentral()
@@ -98,7 +110,9 @@ dependencies {
 
 ### Building from Source
 
-You need [JDK-8+](http://jdk.java.net/8/) (at least) to build this extension. The project can be built with Maven using the following command.
+You need [JDK-8+](http://jdk.java.net/8/) (at least) to build this extension. The project can be built with Maven using
+the following command.
+
 ```
 mvn clean package
 ```
@@ -106,6 +120,7 @@ mvn clean package
 ### Installing in the Local Maven Repository
 
 The project can be installed in a local Maven Repository for usage in other projects via the following command.
+
 ```
 mvn clean install
 ```
@@ -115,6 +130,7 @@ mvn clean install
 The master of the project pushes SNAPSHOTs in Sonatype's repo.
 
 To use the latest master build add Sonatype OSS snapshot repository, for Maven:
+
 ```
 <repositories>
     ...
@@ -126,6 +142,7 @@ To use the latest master build add Sonatype OSS snapshot repository, for Maven:
 ```
 
 For Gradle:
+
 ```groovy
 repositories {
     // ...

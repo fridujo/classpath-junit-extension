@@ -19,6 +19,8 @@ public class PathElement implements Comparable<PathElement> {
     public static PathElement create(String rawPath) {
         String normalizedRawPath = rawPath;
 
+        normalizedRawPath = normalizedRawPath.replace("\\\\", "\\");
+
         boolean directory = Files.isDirectory(Paths.get(rawPath));
         boolean alreadyHasTerminalSlash = rawPath.trim().endsWith(File.separator);
         if (directory && !alreadyHasTerminalSlash) {

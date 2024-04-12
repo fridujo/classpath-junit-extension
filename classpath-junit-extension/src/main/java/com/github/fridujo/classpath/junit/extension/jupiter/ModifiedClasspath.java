@@ -27,7 +27,6 @@ public @interface ModifiedClasspath {
      * <li><b>groupId:artifactId:version</b></li>
      * </ul>
      * <p>
-     * <p>
      * In opposition to {@link #excludeDependencies()}, their will be no attempt to list and exclude dependencies.
      */
     String[] excludeJars() default {};

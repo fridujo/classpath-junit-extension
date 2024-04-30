@@ -18,7 +18,7 @@
         <maven.compiler.target>17</maven.compiler.target>
 
         <logback.version>1.5.3</logback.version>
-        <mima.version>2.4.10</mima.version>
+        <mima.version>2.4.12</mima.version>
         <maven-resolver.version>1.9.18</maven-resolver.version>
 
         <junit.jupiter.version>5.10.2</junit.jupiter.version>
